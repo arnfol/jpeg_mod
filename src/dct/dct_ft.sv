@@ -7,7 +7,9 @@ module dct_ft #(INPUT_W = 8) (
 logic signed [15:0] sx_in [7:0];
 
 always_comb begin : proc_u2s
-   foreach(sx_in[i]) sx_in[i] = $signed(x_in[i]);
+   for(int i=0; i<8; i++) begin 
+		sx_in[i] = $signed(x_in[i]);
+	end
 end
 
 // stage 1
@@ -58,7 +60,9 @@ end
 
 // output res
 always_comb begin : proc_res
-   foreach(x_out[i]) x_out[i] = temp_s4x[i];
+	for(int i=0; i<8; i++) begin 
+		x_out[i] = temp_s4x[i];
+	end
 end
 
 endmodule
