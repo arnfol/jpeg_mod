@@ -7,15 +7,14 @@ module dct_it #(INPUT_W = 16) (
 logic signed [15:0] temp_s1x [7:0];
 
 always_comb begin : proc_stage_1
-   foreach (temp_s1x[i]) temp_s1x[i] = '0;
-   temp_s1x[1] = x_in[0]>>>1 - x_in[1];
+   foreach (temp_s1x[i]) temp_s1x[i] = x_in[i];
+   temp_s1x[1] = (x_in[0]>>>1) - x_in[1];
    temp_s1x[0] = x_in[0] - temp_s1x[1];
-   temp_s1x[3] = x_in[3] - (x_in[2]>>>3 + x_in[2]>>>2);
-   temp_s1x[2] = (temp_s1x[2]>>>3 + temp_s1x[2]>>>2) + x_in[2];
-   temp_s1x[4] = x_in[7]>>>3 + x_in[4];
-   temp_s1x[6] = x_in[5]>>>1 + x_in[6];
-   temp_s1x[5] = x_in[5] - (temp_s1x[6]>>>3 + temp_s1x[6]>>>2 + temp_s1x[6]>>>1);
-   temp_s1x[7] = x_in[7];
+   temp_s1x[3] = x_in[3] - ((x_in[2]>>>3) + (x_in[2]>>>2));
+   temp_s1x[2] = ((temp_s1x[3]>>>3) + (temp_s1x[3]>>>2)) + x_in[2];
+   temp_s1x[4] = (x_in[7]>>>3) + x_in[4];
+   temp_s1x[6] = (x_in[5]>>>1) + x_in[6];
+   temp_s1x[5] = x_in[5] - ((temp_s1x[6]>>>3) + (temp_s1x[6]>>>2) + (temp_s1x[6]>>>1));
 end
 
 // stage 2
@@ -38,8 +37,8 @@ logic signed [15:0] temp_s3x [7:0];
 
 always_comb begin : proc_stage_3
    foreach (temp_s3x[i]) temp_s3x[i] = temp_s2x[i];
-   temp_s3x[5] = (temp_s2x[6]>>>3 + temp_s2x[6]>>>1) - temp_s2x[5];
-   temp_s3x[6] = temp_s2x[6] - (temp_s3x[5]>>>3 + temp_s3x[5]>>>2);
+   temp_s3x[5] = ((temp_s2x[6]>>>3) + (temp_s2x[6]>>>1)) - temp_s2x[5];
+   temp_s3x[6] = temp_s2x[6] - ((temp_s3x[5]>>>3) + (temp_s3x[5]>>>2));
 end
 
 // stage 4
