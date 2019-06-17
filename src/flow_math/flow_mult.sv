@@ -1,3 +1,33 @@
+/*
+    ------------------------------------------------------------------------------
+    -- The MIT License (MIT)
+    --
+    -- Copyright (c) <2019> Konovalov Vitaliy
+    --
+    -- Permission is hereby granted, free of charge, to any person obtaining a copy
+    -- of this software and associated documentation files (the "Software"), to deal
+    -- in the Software without restriction, including without limitation the rights
+    -- to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+    -- copies of the Software, and to permit persons to whom the Software is
+    -- furnished to do so, subject to the following conditions:
+    --
+    -- The above copyright notice and this permission notice shall be included in
+    -- all copies or substantial portions of the Software.
+    --
+    -- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    -- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    -- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    -- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    -- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+    -- THE SOFTWARE.
+    -------------------------------------------------------------------------------
+    Project     : JPEG_MOD
+    Author      : Konovalov Vitaliy
+    Description :
+                  Note: output is only 16 bit, overflow is not handled in any way. 
+*/
+
 module flow_mult #(
 	N    = 2, // bus width
 	PIPE = 4  // number of math pipelines
@@ -50,14 +80,14 @@ module flow_mult #(
 	generate for (i = 0; i < N; i++) begin : math_gen
 
 		lpm_mult u_lpm_mult (
-			.aclr  (!rst_n            ),
-			.clken (en & in_valid     ),
-			.clock (clk               ),
-			.dataa (in_data[i]        ),
-			.datab ({1'b0, in_mult[i]}), // 1'b0 for convertion to unsigned
-			.result(out_data[i]       ), // TODO: check overflow
-			.sclr  (1'b0              ),
-			.sum   (1'b0              )
+			.aclr  (!rst_n                ),
+			.clken (en & in_valid & |valid),
+			.clock (clk                   ),
+			.dataa (in_data[i]            ),
+			.datab ({1'b0, in_mult[i]}    ), // 1'b0 for convertion to unsigned
+			.result(out_data[i]           ), // TODO: check overflow
+			.sclr  (1'b0                  ),
+			.sum   (1'b0                  )
 		);
 		defparam
 			u_lpm_mult.lpm_hint = "MAXIMIZE_SPEED=5",
