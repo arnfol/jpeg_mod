@@ -53,7 +53,7 @@ module flow_mult #(
 			.clken (en & in_valid  ),
 			.clock (clk            ),
 			.dataa (in_data        ),
-			.datab ({1'b0, in_mult}),
+			.datab ({1'b0, in_mult}), // 1'b0 for convertion to unsigned
 			.result(out_data       ), // TODO: check overflow
 			.sclr  (1'b0           ),
 			.sum   (1'b0           )
