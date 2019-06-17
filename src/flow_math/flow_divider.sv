@@ -1,6 +1,6 @@
 module flow_divider #(
 	N    = 2, // bus width
-	PIPE = 4  // number of math pipelines
+	PIPE = 8  // number of math pipelines
 ) (
 	input                               clk      ,
 	input                               en       ,
@@ -20,7 +20,7 @@ module flow_divider #(
 	output logic                        out_sof
 );
 
-	logic [N-1:0] eob, sob, sof, valid;
+	logic [PIPE-1:0] eob, sob, sof, valid;
 
 
 	/*------------------------------------------------------------------------------
@@ -46,7 +46,8 @@ module flow_divider #(
 	/*------------------------------------------------------------------------------
 	--  Math
 	------------------------------------------------------------------------------*/
-	generate for (genvar i = 0; i < N; i++) begin : math_gen
+	genvar i;
+	generate for (i = 0; i < N; i++) begin : math_gen
 
 		lpm_divide u_lpm_divide (
 			.aclr    (!rst_n       ),
@@ -66,7 +67,7 @@ module flow_divider #(
 			u_lpm_divide.lpm_widthd = 10,
 			u_lpm_divide.lpm_widthn = 16;
 
-	end	endgenerate
+	end endgenerate
 	
 
 

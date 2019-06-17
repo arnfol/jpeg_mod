@@ -20,7 +20,7 @@ module flow_mult #(
 	output logic                        out_sof
 );
 
-	logic [N-1:0] eob, sob, sof, valid;
+	logic [PIPE-1:0] eob, sob, sof, valid;
 
 
 	/*------------------------------------------------------------------------------
@@ -46,17 +46,18 @@ module flow_mult #(
 	/*------------------------------------------------------------------------------
 	--  Math
 	------------------------------------------------------------------------------*/
-	generate for (genvar i = 0; i < N; i++) begin : math_gen
+	genvar i;
+	generate for (i = 0; i < N; i++) begin : math_gen
 
 		lpm_mult u_lpm_mult (
-			.aclr  (!rst_n         ),
-			.clken (en & in_valid  ),
-			.clock (clk            ),
-			.dataa (in_data        ),
-			.datab ({1'b0, in_mult}), // 1'b0 for convertion to unsigned
-			.result(out_data       ), // TODO: check overflow
-			.sclr  (1'b0           ),
-			.sum   (1'b0           )
+			.aclr  (!rst_n            ),
+			.clken (en & in_valid     ),
+			.clock (clk               ),
+			.dataa (in_data[i]        ),
+			.datab ({1'b0, in_mult[i]}), // 1'b0 for convertion to unsigned
+			.result(out_data[i]       ), // TODO: check overflow
+			.sclr  (1'b0              ),
+			.sum   (1'b0              )
 		);
 		defparam
 			u_lpm_mult.lpm_hint = "MAXIMIZE_SPEED=5",
@@ -67,7 +68,7 @@ module flow_mult #(
 			u_lpm_mult.lpm_widthb = 11,
 			u_lpm_mult.lpm_widthp = 27;
 
-	end	endgenerate
+	end endgenerate
 	
 
 
