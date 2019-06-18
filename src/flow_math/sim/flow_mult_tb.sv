@@ -27,6 +27,8 @@ module flow_mult_tb ();
 	------------------------------------------------------------------------------*/
 	always #5 clk = !clk;
 
+	initial #1000 $stop(); // simulation timeout
+
 	initial begin 	
 		en = 1;
 		rst_n = 0;

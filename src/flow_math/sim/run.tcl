@@ -5,11 +5,18 @@
 set worklib "work"
 set top_lvl "flow_mult_tb"
 set macro_file "wave.do"
+set path_to_quartus C:/intelFPGA/18.0/quartus
 
 # -------------------------------------------------------------------
-# make lib
+# make libs
 # -------------------------------------------------------------------
 vlib $worklib
+
+# create quartus megafunctions lib
+vlib lpm_ver
+vmap lpm_ver lpm_ver
+vlog -work lpm_ver $path_to_quartus/eda/sim_lib/220model.v
+
 
 # -------------------------------------------------------------------
 # compile
@@ -32,4 +39,4 @@ vsim -L lpm_ver "$worklib.$top_lvl"
 if {!($macro_file eq "")} { do $macro_file }
 
 # run
-run 100 ns
+run -all
