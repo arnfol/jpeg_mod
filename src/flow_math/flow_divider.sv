@@ -67,10 +67,10 @@ module flow_divider #(
 		end
 	end
 
-	assign out_eob = eob[N-1];
-	assign out_sob = sob[N-1];
-	assign out_sof = sof[N-1];
-	assign out_valid = valid[N-1];
+	assign out_eob = eob[PIPE-1];
+	assign out_sob = sob[PIPE-1];
+	assign out_sof = sof[PIPE-1];
+	assign out_valid = valid[PIPE-1];
 
 
 	/*------------------------------------------------------------------------------
@@ -80,13 +80,13 @@ module flow_divider #(
 	generate for (i = 0; i < N; i++) begin : math_gen
 
 		lpm_divide u_lpm_divide (
-			.aclr    (!rst_n       ),
-			.clken   (en & in_valid),
-			.clock   (clk          ),
-			.denom   (in_denom[i]  ),
-			.numer   (in_data[i]   ),
-			.quotient(out_data[i]  ),
-			.remain  (             )
+			.aclr    (!rst_n                 ),
+			.clken   (en & |{in_valid, valid}),
+			.clock   (clk                    ),
+			.denom   (in_denom[i]            ),
+			.numer   (in_data[i]             ),
+			.quotient(out_data[i]            ),
+			.remain  (                       )
 		);
 		defparam
 			u_lpm_divide.lpm_drepresentation = "UNSIGNED",
