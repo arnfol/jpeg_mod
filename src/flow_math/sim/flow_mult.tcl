@@ -4,7 +4,7 @@
 
 set worklib "work"
 set top_lvl "flow_mult_tb"
-set macro_file "wave.do"
+set macro_file "flow_mult_wave.do"
 set path_to_quartus C:/intelFPGA/18.0/quartus
 
 # -------------------------------------------------------------------
