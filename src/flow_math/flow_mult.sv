@@ -67,10 +67,10 @@ module flow_mult #(
 		end
 	end
 
-	assign out_eob = eob[N-1];
-	assign out_sob = sob[N-1];
-	assign out_sof = sof[N-1];
-	assign out_valid = valid[N-1];
+	assign out_eob = eob[PIPE-1];
+	assign out_sob = sob[PIPE-1];
+	assign out_sof = sof[PIPE-1];
+	assign out_valid = valid[PIPE-1];
 
 
 	/*------------------------------------------------------------------------------
@@ -80,14 +80,14 @@ module flow_mult #(
 	generate for (i = 0; i < N; i++) begin : math_gen
 
 		lpm_mult u_lpm_mult (
-			.aclr  (!rst_n                ),
-			.clken (en & in_valid & |valid),
-			.clock (clk                   ),
-			.dataa (in_data[i]            ),
-			.datab ({1'b0, in_mult[i]}    ), // 1'b0 for convertion to unsigned
-			.result(out_data[i]           ), // TODO: check overflow
-			.sclr  (1'b0                  ),
-			.sum   (1'b0                  )
+			.aclr  (!rst_n                 ),
+			.clken (en & |{in_valid, valid}),
+			.clock (clk                    ),
+			.dataa (in_data[i]             ),
+			.datab ({1'b0, in_mult[i]}     ), // 1'b0 for convertion to unsigned
+			.result(out_data[i]            ), // TODO: check overflow
+			.sclr  (1'b0                   ),
+			.sum   (1'b0                   )
 		);
 		defparam
 			u_lpm_mult.lpm_hint = "MAXIMIZE_SPEED=5",

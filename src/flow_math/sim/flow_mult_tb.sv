@@ -8,12 +8,12 @@ module flow_mult_tb ();
 	bit en;
 	bit rst_n;
 
-	logic in_valid;
+	bit in_valid;
 	logic signed [N-1:0][15:0] in_data;
 	logic unsigned [N-1:0][9:0] in_mult;
-	logic in_eob;
-	logic in_sob;
-	logic in_sof;
+	bit in_eob;
+	bit in_sob;
+	bit in_sof;
 
 	logic out_valid;
 	logic signed [N-1:0][15:0] out_data;
@@ -27,24 +27,27 @@ module flow_mult_tb ();
 	------------------------------------------------------------------------------*/
 	always #5 clk = !clk;
 
-	initial #1000 $stop(); // simulation timeout
+	initial begin
+		#10000 $display("%t : Test complete", $time);
+		$stop(); // simulation timeout
+	end
 
+	int wait_cycles;
 	initial begin 	
 		en = 1;
 		rst_n = 0;
 		repeat(2) @(posedge clk);
 		rst_n = 1;
 
-		forever @(posedge clk) begin 
-			if($urandom_range(1)) send_block();
-			else wait_for($urandom_range(100));
-		end
-	end
-
-	always @(posedge clk) begin 
-		for (int i = 0; i < N; i++) begin
-			in_mult[i] <= $random();
-			in_data[i] <= $random();
+		forever begin 
+			if($urandom_range(1)) begin
+				$display("%t : sending block", $time);
+				send_block();
+			end else begin 
+				wait_cycles = $urandom_range(36);
+				$display("%t : waiting for %0d cycles", $time, wait_cycles);
+				wait_for(wait_cycles);
+			end 
 		end
 	end
 
@@ -52,16 +55,32 @@ module flow_mult_tb ();
 	--  Tasks
 	------------------------------------------------------------------------------*/
 	task send_block();
+
 		for (int i = 0; i < 32; i++) begin
 			in_sob <= (i == 0);
 			in_sof <= (i == 0) && $urandom_range(1);
 			in_eob <= (i == 31);
 			in_valid <= 1;
+
+			for (int i = 0; i < N; i++) begin
+				in_mult[i] <= $random();
+				in_data[i] <= $random();
+			end
+
+			@(posedge clk);
+
+			in_sob <= 0;
+			in_sof <= 0;
+			in_eob <= 0;
+			in_valid <= 0;
 		end
+
 	endtask : send_block
 
-	task wait_for(int cycles);
+	task wait_for(int cycles);;
+
 		repeat(cycles) @(posedge clk);
+
 	endtask : wait_for
 
 
