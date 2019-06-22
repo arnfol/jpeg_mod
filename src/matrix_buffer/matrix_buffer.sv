@@ -1,34 +1,34 @@
-module matrix_buffer #(W = 16, TRPS = 0) (
-   input                     clk      ,
-   input                     rst_n    ,
+module matrix_buffer #(W_IO = 16, TRPS = 0) (
+   input                        clk      ,
+   input                        rst_n    ,
    // input interface
-   input                     in_valid ,
-   input        [7:0][W-1:0] in_data  ,
-   input                     in_eob   ,
-   input                     in_sob   ,
-   input                     in_sof   ,
+   input                        in_valid ,
+   input        [7:0][W_IO-1:0] in_data  ,
+   input                        in_eob   ,
+   input                        in_sob   ,
+   input                        in_sof   ,
    // output interface
-   output logic              out_valid,
-   output logic [7:0][W-1:0] out_data ,
-   output logic              out_eob  ,
-   output logic              out_sob  ,
-   output logic              out_sof
+   output logic                 out_valid,
+   output logic [7:0][W_IO-1:0] out_data ,
+   output logic                 out_eob  ,
+   output logic                 out_sob  ,
+   output logic                 out_sof
 );
 
-typedef logic [7:0][W-1:0] matrix_t [7:0];
+typedef logic [7:0][W_IO-1:0] matrix_t [7:0];
 
-function automatic matrix_t transpose (logic [7:0][W-1:0] matrix [7:0]);
-   logic [7:0][W-1:0] array_tps [7:0];
-   foreach(matrix[i,j]) array_tps[i][j] = matrix[j][i];
-   return array_tps;
+function automatic matrix_t transpose (logic [7:0][W_IO-1:0] matrix [7:0]);
+   logic [7:0][W_IO-1:0] array_trps [7:0];
+   foreach(matrix[i,j]) array_trps[i][j] = matrix[j][i];
+   return array_trps;
 endfunction : transpose
 
-logic [7:0][W-1:0] matrix_buffer[1:0][7:0];
-logic [7:0][W-1:0] matrix_trps  [1:0][7:0];
-logic             sel_ibuffer            ;
-logic             sel_obuffer            ;
-logic [2:0]       mux_ibuffer            ;
-logic [2:0]       mux_obuffer            ;
+logic [7:0][W_IO-1:0] matrix_buffer[1:0][7:0];
+logic [7:0][W_IO-1:0] matrix_trps  [1:0][7:0];
+logic                 sel_ibuffer            ;
+logic                 sel_obuffer            ;
+logic [2:0]           mux_ibuffer            ;
+logic [2:0]           mux_obuffer            ;
 
 logic [7:0] sof_m [1:0];
 

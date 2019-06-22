@@ -124,7 +124,7 @@ endtask : wait_for
 
 // instance
 
-matrix_buffer #(.W(8), .TRPS(0)) i_matrix_buffer0 (
+matrix_buffer #(.W_IO(8), .TRPS(0)) i_matrix_buffer0 (
    .clk      (clk           ),
    .rst_n    (rst_n         ),
    .in_valid (in_valid      ),
@@ -139,7 +139,7 @@ matrix_buffer #(.W(8), .TRPS(0)) i_matrix_buffer0 (
    .out_sof  (out_sof_t[0]  )
 );
 
-matrix_buffer #(.W(8), .TRPS(1)) i_matrix_buffer1 (
+matrix_buffer #(.W_IO(8), .TRPS(1)) i_matrix_buffer1 (
    .clk      (clk           ),
    .rst_n    (rst_n         ),
    .in_valid (out_valid_t[0]),
@@ -154,7 +154,7 @@ matrix_buffer #(.W(8), .TRPS(1)) i_matrix_buffer1 (
    .out_sof  (out_sof_t[1]  )
 );
 
-matrix_buffer #(.W(8), .TRPS(1)) i_matrix_buffer2 (
+matrix_buffer #(.W_IO(8), .TRPS(1)) i_matrix_buffer2 (
    .clk      (clk           ),
    .rst_n    (rst_n         ),
    .in_valid (out_valid_t[1]),
@@ -169,7 +169,7 @@ matrix_buffer #(.W(8), .TRPS(1)) i_matrix_buffer2 (
    .out_sof  (out_sof_t[2]  )
 );
 
-matrix_buffer #(.W(8), .TRPS(0)) i_matrix_buffer3 (
+matrix_buffer #(.W_IO(8), .TRPS(0)) i_matrix_buffer3 (
    .clk      (clk           ),
    .rst_n    (rst_n         ),
    .in_valid (out_valid_t[2]),
