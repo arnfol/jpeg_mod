@@ -22,7 +22,7 @@ always_ff @(posedge clk, negedge rst_n) begin : proc_u2s
 		sx_in <= '{default:'0};
 	else
 		for(int i=0; i<8; i++)
-			sx_in[i] <= $signed({8'b0,x_in[i]});
+			sx_in[i] <= $signed(x_in[i]);
 end
 
 // stage 1

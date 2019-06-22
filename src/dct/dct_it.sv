@@ -1,22 +1,22 @@
-module dct_it #(W = 16, PIPE = 8) (
-	input                            clk      ,
-	input                            rst_n    ,
+module dct_it #(W_I = 16, W_O = 16, PIPE = 8) (
+	input                              clk      ,
+	input                              rst_n    ,
 	// input interface
-	input                            in_valid ,
-	input        signed [7:0][W-1:0] in_data  ,
-	input                            in_eob   ,
-	input                            in_sob   ,
-	input                            in_sof   ,
+	input                              in_valid ,
+	input        signed [7:0][W_I-1:0] in_data  ,
+	input                              in_eob   ,
+	input                              in_sob   ,
+	input                              in_sof   ,
 	// output interface
-	output logic                     out_valid,
-	output logic        [  7:0][7:0] out_data ,
-	output logic                     out_eob  ,
-	output logic                     out_sob  ,
-	output logic                     out_sof
+	output logic                       out_valid,
+	output logic        [7:0][W_O-1:0] out_data ,
+	output logic                       out_eob  ,
+	output logic                       out_sob  ,
+	output logic                       out_sof
 );
 
-logic signed [W-1:0] x_in [7:0];
-logic        [  7:0] x_out[7:0];
+logic signed [W_I-1:0] x_in [7:0];
+logic        [W_O-1:0] x_out[7:0];
 
 logic [PIPE-1:0] eob, sob, sof, valid;
 
@@ -42,6 +42,6 @@ always_comb begin
    foreach(x_out[i]) out_data[i] = x_out[i];
 end
 
-dct_it_math #(.W(W)) i_dct_it_math (.clk(clk), .rst_n(rst_n), .x_in(x_in), .x_out(x_out));
+dct_it_math #(.W_I(W_I), .W_O(W_O)) i_dct_it_math (.clk(clk), .rst_n(rst_n), .x_in(x_in), .x_out(x_out));
 
 endmodule

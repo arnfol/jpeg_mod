@@ -3,20 +3,20 @@ module dct_ft #(W = 8, PIPE = 8) (
 	input                            rst_n    ,
 	// input interface
 	input                            in_valid ,
-	input               [W-1:0][7:0] in_data  ,
+	input               [7:0][W-1:0] in_data  ,
 	input                            in_eob   ,
 	input                            in_sob   ,
 	input                            in_sof   ,
 	// output interface
 	output logic                     out_valid,
-	output logic signed [7:0][15:0]  out_data ,
+	output logic signed [7:0][ 15:0] out_data ,
 	output logic                     out_eob  ,
 	output logic                     out_sob  ,
 	output logic                     out_sof
 );
 
-logic        [ 7:0] x_in [7:0];
-logic signed [15:0] x_out[7:0];
+logic        [W-1:0] x_in [7:0];
+logic signed [ 15:0] x_out[7:0];
 
 logic [PIPE-1:0] eob, sob, sof, valid;
 
