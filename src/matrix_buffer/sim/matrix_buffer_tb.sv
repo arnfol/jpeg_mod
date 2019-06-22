@@ -125,13 +125,13 @@ endtask : wait_for
 // instance
 
 matrix_buffer #(.W(8), .TRPS(0)) i_matrix_buffer0 (
-   .clk      (clk      ),
-   .rst_n    (rst_n    ),
-   .in_valid (in_valid ),
-   .in_data  (in_data  ),
-   .in_eob   (in_eob   ),
-   .in_sob   (in_sob   ),
-   .in_sof   (in_sof   ),
+   .clk      (clk           ),
+   .rst_n    (rst_n         ),
+   .in_valid (in_valid      ),
+   .in_data  (in_data       ),
+   .in_eob   (in_eob        ),
+   .in_sob   (in_sob        ),
+   .in_sof   (in_sof        ),
    .out_valid(out_valid_t[0]),
    .out_data (out_data_t[0] ),
    .out_eob  (out_eob_t[0]  ),
@@ -140,13 +140,13 @@ matrix_buffer #(.W(8), .TRPS(0)) i_matrix_buffer0 (
 );
 
 matrix_buffer #(.W(8), .TRPS(1)) i_matrix_buffer1 (
-   .clk      (clk      ),
-   .rst_n    (rst_n    ),
-   .in_valid (out_valid_t[0] ),
-   .in_data  (out_data_t[0]  ),
-   .in_eob   (out_eob_t[0]   ),
-   .in_sob   (out_sob_t[0]   ),
-   .in_sof   (out_sof_t[0]   ),
+   .clk      (clk           ),
+   .rst_n    (rst_n         ),
+   .in_valid (out_valid_t[0]),
+   .in_data  (out_data_t[0] ),
+   .in_eob   (out_eob_t[0]  ),
+   .in_sob   (out_sob_t[0]  ),
+   .in_sof   (out_sof_t[0]  ),
    .out_valid(out_valid_t[1]),
    .out_data (out_data_t[1] ),
    .out_eob  (out_eob_t[1]  ),
@@ -155,13 +155,13 @@ matrix_buffer #(.W(8), .TRPS(1)) i_matrix_buffer1 (
 );
 
 matrix_buffer #(.W(8), .TRPS(1)) i_matrix_buffer2 (
-   .clk      (clk      ),
-   .rst_n    (rst_n    ),
-   .in_valid (out_valid_t[1] ),
-   .in_data  (out_data_t[1]  ),
-   .in_eob   (out_eob_t[1]   ),
-   .in_sob   (out_sob_t[1]   ),
-   .in_sof   (out_sof_t[1]   ),
+   .clk      (clk           ),
+   .rst_n    (rst_n         ),
+   .in_valid (out_valid_t[1]),
+   .in_data  (out_data_t[1] ),
+   .in_eob   (out_eob_t[1]  ),
+   .in_sob   (out_sob_t[1]  ),
+   .in_sof   (out_sof_t[1]  ),
    .out_valid(out_valid_t[2]),
    .out_data (out_data_t[2] ),
    .out_eob  (out_eob_t[2]  ),
@@ -170,18 +170,18 @@ matrix_buffer #(.W(8), .TRPS(1)) i_matrix_buffer2 (
 );
 
 matrix_buffer #(.W(8), .TRPS(0)) i_matrix_buffer3 (
-   .clk      (clk      ),
-   .rst_n    (rst_n    ),
-   .in_valid (out_valid_t[2] ),
-   .in_data  (out_data_t[2]  ),
-   .in_eob   (out_eob_t[2]   ),
-   .in_sob   (out_sob_t[2]   ),
-   .in_sof   (out_sof_t[2]   ),
-   .out_valid(out_valid),
-   .out_data (out_data ),
-   .out_eob  (out_eob  ),
-   .out_sob  (out_sob  ),
-   .out_sof  (out_sof  )
+   .clk      (clk           ),
+   .rst_n    (rst_n         ),
+   .in_valid (out_valid_t[2]),
+   .in_data  (out_data_t[2] ),
+   .in_eob   (out_eob_t[2]  ),
+   .in_sob   (out_sob_t[2]  ),
+   .in_sof   (out_sof_t[2]  ),
+   .out_valid(out_valid     ),
+   .out_data (out_data      ),
+   .out_eob  (out_eob       ),
+   .out_sob  (out_sob       ),
+   .out_sof  (out_sof       )
 );
 
 endmodule
