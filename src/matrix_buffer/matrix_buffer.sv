@@ -15,16 +15,16 @@ module matrix_buffer #(W = 16, TRPS = 0) (
    output logic              out_sof
 );
 
-typedef logic [7:0][15:0] matrix_t [7:0];
+typedef logic [7:0][W-1:0] matrix_t [7:0];
 
-function automatic matrix_t transpose (logic [7:0][15:0] matrix [7:0]);
-   logic [7:0][15:0] array_tps [7:0];
+function automatic matrix_t transpose (logic [7:0][W-1:0] matrix [7:0]);
+   logic [7:0][W-1:0] array_tps [7:0];
    foreach(matrix[i,j]) array_tps[i][j] = matrix[j][i];
    return array_tps;
 endfunction : transpose
 
-logic [7:0][15:0] matrix_buffer[1:0][7:0];
-logic [7:0][15:0] matrix_trps  [1:0][7:0];
+logic [7:0][W-1:0] matrix_buffer[1:0][7:0];
+logic [7:0][W-1:0] matrix_trps  [1:0][7:0];
 logic             sel_ibuffer            ;
 logic             sel_obuffer            ;
 logic [2:0]       mux_ibuffer            ;
@@ -99,7 +99,7 @@ end
 // buffer unload
 always_comb begin
    if(TRPS==1)
-      out_data = matrix_tr[sel_obuffer][mux_obuffer];
+      out_data = matrix_trps[sel_obuffer][mux_obuffer];
    else if(TRPS==0)
       out_data = matrix_buffer[sel_obuffer][mux_obuffer];
    out_sof  = sof_m[sel_obuffer][mux_obuffer];
