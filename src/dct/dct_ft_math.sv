@@ -1,9 +1,9 @@
-module dct_ft_math #(W = 8) (
-	input                       clk        ,
-	input                       rst_n      ,
+module dct_ft_math #(W_I = 8) (
+	input                         clk        ,
+	input                         rst_n      ,
 	//
-	input               [W-1:0] x_in  [7:0],
-	output logic signed [ 15:0] x_out [7:0]
+	input               [W_I-1:0] x_in  [7:0],
+	output logic signed [   15:0] x_out [7:0]
 );
 
 function automatic logic signed [18:0] round(logic signed [18:0] v);

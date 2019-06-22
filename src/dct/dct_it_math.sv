@@ -1,8 +1,8 @@
-module dct_it_math #(W_I = 16, W_O = 16) (
-	input                       clk        ,
-	input                       rst_n      ,
+module dct_it_math #(W_O = 16) (
+	input                         clk        ,
+	input                         rst_n      ,
 	//
-	input        signed [W_I-1:0] x_in  [7:0],
+	input        signed [   15:0] x_in  [7:0],
 	output logic        [W_O-1:0] x_out [7:0]
 );
 
