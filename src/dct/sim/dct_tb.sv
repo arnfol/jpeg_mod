@@ -81,7 +81,7 @@ initial
             val[0][i] <= input_data_q[i].pop_front();
             val[1][i] <= output_data_q[i].pop_front();
             if(val[0][i]!=='x||val[1][i]!=='x)
-               assert((val[0][i]-val[1][i]==0)||(val[0][i]-val[1][i]==1)) 
+               assert((val[0][i]-val[1][i]==0)||(val[0][i]-val[1][i]==1)||(val[0][i]-val[1][i]==-1)) 
                else error_data++;
          end
       end
@@ -124,7 +124,7 @@ endtask : wait_for
 
 // instance
 
-dct_ft i_dct_ft (
+dct_ft #(.W(8), .PIPE(8)) i_dct_ft (
    .clk      (clk        ), // TODO: Check connection ! Signal/port not matching : Expecting logic  -- Found bit
    .rst_n    (rst_n      ), // TODO: Check connection ! Signal/port not matching : Expecting logic  -- Found bit
    .in_valid (in_valid   ),
@@ -140,7 +140,7 @@ dct_ft i_dct_ft (
 );
 
 
-dct_it i_dct_it (
+dct_it #(.W_I(16), .W_O(8), .PIPE(8)) i_dct_it (
    .clk      (clk        ), // TODO: Check connection ! Signal/port not matching : Expecting logic  -- Found bit
    .rst_n    (rst_n      ), // TODO: Check connection ! Signal/port not matching : Expecting logic  -- Found bit
    .in_valid (out_valid_t),
