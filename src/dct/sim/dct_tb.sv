@@ -124,7 +124,7 @@ endtask : wait_for
 
 // instance
 
-dct_ft #(.W(8), .PIPE(8)) i_dct_ft (
+dct_ft #(.W_I(8)) i_dct_ft (
    .clk      (clk        ), // TODO: Check connection ! Signal/port not matching : Expecting logic  -- Found bit
    .rst_n    (rst_n      ), // TODO: Check connection ! Signal/port not matching : Expecting logic  -- Found bit
    .in_valid (in_valid   ),
@@ -140,7 +140,7 @@ dct_ft #(.W(8), .PIPE(8)) i_dct_ft (
 );
 
 
-dct_it #(.W_I(16), .W_O(8), .PIPE(8)) i_dct_it (
+dct_it #(.W_O(8)) i_dct_it (
    .clk      (clk        ), // TODO: Check connection ! Signal/port not matching : Expecting logic  -- Found bit
    .rst_n    (rst_n      ), // TODO: Check connection ! Signal/port not matching : Expecting logic  -- Found bit
    .in_valid (out_valid_t),

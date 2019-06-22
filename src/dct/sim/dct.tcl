@@ -11,7 +11,6 @@ vsim -t 1ns -voptargs="+acc" dct_tb
 
 do ./dct_wave.do
 
-radix noshowbase
 configure wave -timelineunits ns
 run -all
 wave zoom full
