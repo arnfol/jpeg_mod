@@ -1,3 +1,4 @@
+`timescale 1ns/1ns
 module dct_tb;
 
 bit clk;
@@ -103,7 +104,7 @@ task send_block();
       in_valid <= 1;
 
       for (int i = 0; i < 8; i++) begin
-         in_data[i] <= $urandom_range(1,255);
+         in_data[i] <= 255;
       end
 
       @(posedge clk);
