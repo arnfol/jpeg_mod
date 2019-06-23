@@ -1,4 +1,4 @@
-module dct_ft #(W_I = 8) (
+module dct_ft_wrapper #(W_I = 8) (
 	input                              clk      ,
 	input                              rst_n    ,
 	// input interface

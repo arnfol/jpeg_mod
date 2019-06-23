@@ -1,4 +1,4 @@
-module dct_it #(W_O = 16) (
+module dct_it_wrapper #(W_O = 16) (
 	input                              clk      ,
 	input                              rst_n    ,
 	// input interface
