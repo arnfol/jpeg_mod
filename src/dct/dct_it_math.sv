@@ -1,119 +1,157 @@
+/*
+    ------------------------------------------------------------------------------
+    -- The MIT License (MIT)
+    --
+    -- Copyright (c) <2019> Allavi Ali
+    --
+    -- Permission is hereby granted, free of charge, to any person obtaining a copy
+    -- of this software and associated documentation files (the "Software"), to deal
+    -- in the Software without restriction, including without limitation the rights
+    -- to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+    -- copies of the Software, and to permit persons to whom the Software is
+    -- furnished to do so, subject to the following conditions:
+    --
+    -- The above copyright notice and this permission notice shall be included in
+    -- all copies or substantial portions of the Software.
+    --
+    -- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    -- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    -- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    -- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    -- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+    -- THE SOFTWARE.
+    -------------------------------------------------------------------------------
+    Project     : JPEG_MOD
+    Author      : Allavi Ali
+    Description : binDCT Inverse Transform algorithm
+                  
+*/
+
 module dct_it_math #(W_O = 16) (
-	input                         clk        ,
-	input                         rst_n      ,
+	input                              clk     ,
+	input                              rst_n   ,
 	//
-	input        signed [   15:0] x_in  [7:0],
-	output logic        [W_O-1:0] x_out [7:0]
+	input        signed [7:0][   15:0] in_data ,
+	output logic        [7:0][W_O-1:0] out_data
 );
 
 function automatic logic signed [18:0] round(logic signed [18:0] v);
 	logic [15:0] result;
 	logic sum_detect;
+
 	sum_detect = v[0]|v[1];
 	result = (~v[18]&v[2])|(v[18]&v[2]&sum_detect) ? v[18:3] + v[2] : v[18:3];
+
 	return {result,3'd0};
 endfunction : round
 
-// vector extension
-logic signed [18:0] x_in_e [7:0];
+// fixed point number
+logic signed [18:0] fixed_point_num_data [7:0];
 
-always_ff @(posedge clk, negedge rst_n) begin : proc_v_ext
+always_ff @(posedge clk, negedge rst_n) begin : fixed_point_num
 	if(~rst_n)
-		x_in_e <= '{default:'0};
+		fixed_point_num_data <= '{default:'0};
 	else
 		for (int i = 0; i < 8; i++)
-			x_in_e[i] <= x_in[i]<<3;
-end
-
-// stage 1 pipe (Arria V GZ syn)
-logic signed [18:0] temp_s1x_pipe [7:0];
-
-always_ff @(posedge clk, negedge rst_n) begin : proc_stage_1_pipe
-	if(~rst_n)
-		temp_s1x_pipe <= '{default:'0};
-	else begin
-		for (int i = 0; i < 8; i++)
-			temp_s1x_pipe[i] <= x_in_e[i];
-		temp_s1x_pipe[1] <= round(x_in_e[0]>>>1) - x_in_e[1];
-		temp_s1x_pipe[3] <= x_in_e[3] - round((x_in_e[2]>>>3) + (x_in_e[2]>>>2));
-		temp_s1x_pipe[6] <= round(x_in_e[5]>>>1) + x_in_e[6];
-	end
+			fixed_point_num_data[i] <= in_data[i]<<3;
 end
 
 // stage 1
-logic signed [18:0] temp_s1x [7:0];
+logic signed [18:0] stage1_data [7:0];
 
-always_ff @(posedge clk, negedge rst_n) begin : proc_stage_1
+always_ff @(posedge clk, negedge rst_n) begin : stage_1
 	if(~rst_n)
-		temp_s1x <= '{default:'0};
+		stage1_data <= '{default:'0};
 	else begin
 		for (int i = 0; i < 8; i++)
-			temp_s1x[i] <= temp_s1x_pipe[i];
-		temp_s1x[0] <= temp_s1x_pipe[0] - temp_s1x_pipe[1];
-		temp_s1x[2] <= round((temp_s1x_pipe[3]>>>3) + (temp_s1x_pipe[3]>>>2)) + temp_s1x_pipe[2];
-		temp_s1x[4] <= round(temp_s1x_pipe[7]>>>3) + temp_s1x_pipe[4];
-		temp_s1x[5] <= temp_s1x_pipe[5] - round((temp_s1x_pipe[6]>>>3) + (temp_s1x_pipe[6]>>>2) + (temp_s1x_pipe[6]>>>1));
+			stage1_data[i] <= fixed_point_num_data[i];
+
+		stage1_data[1] <= round(fixed_point_num_data[0]>>>1) - fixed_point_num_data[1];
+		stage1_data[3] <= fixed_point_num_data[3] - round((fixed_point_num_data[2]>>>3) + (fixed_point_num_data[2]>>>2));
+		stage1_data[6] <= round(fixed_point_num_data[5]>>>1) + fixed_point_num_data[6];
 	end
 end
 
 // stage 2
-logic signed [18:0] temp_s2x [7:0];
+logic signed [18:0] stage2_data [7:0];
 
-always_ff @(posedge clk, negedge rst_n) begin : proc_stage_2
+always_ff @(posedge clk, negedge rst_n) begin : stage_2
 	if(~rst_n)
-		temp_s2x <= '{default:'0};
+		stage2_data <= '{default:'0};
 	else begin
 		for (int i = 0; i < 8; i++)
-			temp_s2x[i] <= temp_s1x[i];
-		temp_s2x[0] <= temp_s1x[0] + temp_s1x[3];
-		temp_s2x[1] <= temp_s1x[1] + temp_s1x[2];
-		temp_s2x[2] <= temp_s1x[1] - temp_s1x[2];
-		temp_s2x[3] <= temp_s1x[0] - temp_s1x[3];
-		temp_s2x[4] <= temp_s1x[4] + temp_s1x[5];
-		temp_s2x[5] <= temp_s1x[4] - temp_s1x[5];
-		temp_s2x[6] <= temp_s1x[7] - temp_s1x[6];
-		temp_s2x[7] <= temp_s1x[6] + temp_s1x[7];
-	end
-end
+			stage2_data[i] <= stage1_data[i];
 
-// stage 3 pipe (Arria V GZ syn)
-logic signed [18:0] temp_s3x_pipe [7:0];
-
-always_ff @(posedge clk, negedge rst_n) begin : proc_stage_3_pipe
-	if(~rst_n)
-		temp_s3x_pipe <= '{default:'0};
-	else begin
-		for (int i = 0; i < 8; i++)
-			temp_s3x_pipe[i] <= temp_s2x[i];
-		temp_s3x_pipe[5] <= round((temp_s2x[6]>>>3) + (temp_s2x[6]>>>1)) - temp_s2x[5];
+		stage2_data[0] <= stage1_data[0] - stage1_data[1];
+		stage2_data[2] <= round((stage1_data[3]>>>3) + (stage1_data[3]>>>2)) + stage1_data[2];
+		stage2_data[4] <= round(stage1_data[7]>>>3) + stage1_data[4];
+		stage2_data[5] <= stage1_data[5] - round((stage1_data[6]>>>3) + (stage1_data[6]>>>2) + (stage1_data[6]>>>1));
 	end
 end
 
 // stage 3
-logic signed [18:0] temp_s3x [7:0];
+logic signed [18:0] stage3_data [7:0];
 
-always_ff @(posedge clk, negedge rst_n) begin : proc_stage_3
+always_ff @(posedge clk, negedge rst_n) begin : stage_3
 	if(~rst_n)
-		temp_s3x <= '{default:'0};
+		stage3_data <= '{default:'0};
 	else begin
 		for (int i = 0; i < 8; i++)
-			temp_s3x[i] <= temp_s3x_pipe[i];
-		temp_s3x[6] <= temp_s3x_pipe[6] - round((temp_s3x_pipe[5]>>>3) + (temp_s3x_pipe[5]>>>2));
+			stage3_data[i] <= stage2_data[i];
+
+		stage3_data[0] <= stage2_data[0] + stage2_data[3];
+		stage3_data[1] <= stage2_data[1] + stage2_data[2];
+		stage3_data[2] <= stage2_data[1] - stage2_data[2];
+		stage3_data[3] <= stage2_data[0] - stage2_data[3];
+		stage3_data[4] <= stage2_data[4] + stage2_data[5];
+		stage3_data[5] <= stage2_data[4] - stage2_data[5];
+		stage3_data[6] <= stage2_data[7] - stage2_data[6];
+		stage3_data[7] <= stage2_data[6] + stage2_data[7];
 	end
 end
 
 // stage 4
-logic signed [18:0] temp_s4x [7:0];
+logic signed [18:0] stage4_data [7:0];
 
-always_ff @(posedge clk, negedge rst_n) begin : proc_stage_4
+always_ff @(posedge clk, negedge rst_n) begin : stage_4
 	if(~rst_n)
-		temp_s4x <= '{default:'0};
+		stage4_data <= '{default:'0};
 	else begin
 		for (int i = 0; i < 8; i++)
-			temp_s4x[i] <= temp_s3x[i];
+			stage4_data[i] <= stage3_data[i];
+
+		stage4_data[5] <= round((stage3_data[6]>>>3) + (stage3_data[6]>>>1)) - stage3_data[5];
+	end
+end
+
+// stage 5
+logic signed [18:0] stage5_data [7:0];
+
+always_ff @(posedge clk, negedge rst_n) begin : stage_5
+	if(~rst_n)
+		stage5_data <= '{default:'0};
+	else begin
+		for (int i = 0; i < 8; i++)
+			stage5_data[i] <= stage4_data[i];
+
+		stage5_data[6] <= stage4_data[6] - round((stage4_data[5]>>>3) + (stage4_data[5]>>>2));
+	end
+end
+
+// stage 6
+logic signed [18:0] stage6_data [7:0];
+
+always_ff @(posedge clk, negedge rst_n) begin : stage_6
+	if(~rst_n)
+		stage6_data <= '{default:'0};
+	else begin
+		for (int i = 0; i < 8; i++)
+			stage6_data[i] <= stage5_data[i];
+
 		for (int i = 0; i < 4; i++) begin
-			temp_s4x[i]   <= temp_s3x[i] + temp_s3x[7-i];
-			temp_s4x[4+i] <= temp_s3x[3-i] - temp_s3x[4+i];
+			stage6_data[i]   <= stage5_data[i] + stage5_data[7-i];
+			stage6_data[4+i] <= stage5_data[3-i] - stage5_data[4+i];
 		end
 	end
 end
@@ -121,10 +159,10 @@ end
 // output res
 always_ff @(posedge clk, negedge rst_n) begin : proc_res
 	if(~rst_n)
-		x_out <= '{default:'0};
+		out_data <= '{default:'0};
 	else
 		for (int i = 0; i < 8; i++)
-			x_out[i] <= (temp_s4x[i]>>>2)>>3;
+			out_data[i] <= (stage6_data[i]>>>2)>>3;
 end
 
 endmodule
