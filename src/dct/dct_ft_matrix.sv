@@ -30,8 +30,8 @@
 
 `define DCT_FT
 
-module dct_ft_wrapper #(W_I = 8)
+module dct_ft_matrix
 
-`include "dct_wrapper.svh"
+`include "dct_matrix.svh"
 
 endmodule
