@@ -1,3 +1,4 @@
+`timescale 1ns/1ns
 module matrix_buffer_tb;
 
 bit clk;
