@@ -32,29 +32,29 @@ module dct_ft_math #(W_I = 8) (
 	input                              clk     ,
 	input                              rst_n   ,
 	//
-	input               [7:0][W_I-1:0] in_data ,
+	input        signed [7:0][W_I-1:0] in_data ,
 	output logic signed [7:0][   15:0] out_data
 );
 
 function automatic logic signed [18:0] round(logic signed [18:0] v);
-	logic [15:0] result;
+	logic signed [15:0] result;
 	logic sum_detect;
 
 	sum_detect = v[0]|v[1];
 	result = (~v[18]&v[2])|(v[18]&v[2]&sum_detect) ? v[18:3] + v[2] : v[18:3];
 
-	return {result,3'd0};
+	return $signed({result,3'd0});
 endfunction : round
 
-// unsigned to signed
+// 8 bit signed to 16 bit signed
 logic signed [15:0] sign_data_in [7:0];
 
-always_ff @(posedge clk, negedge rst_n) begin : u2s
+always_ff @(posedge clk, negedge rst_n) begin : s2s
 	if(~rst_n)
 		sign_data_in <= '{default:'0};
 	else
 		for(int i=0; i<8; i++)
-			sign_data_in[i] <= $signed({'0,in_data[i]});
+			sign_data_in[i] <= $signed(in_data[i]);
 end
 
 // stage 1

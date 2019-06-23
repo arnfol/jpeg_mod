@@ -33,17 +33,17 @@ module dct_it_math #(W_O = 16) (
 	input                              rst_n   ,
 	//
 	input        signed [7:0][   15:0] in_data ,
-	output logic        [7:0][W_O-1:0] out_data
+	output logic signed [7:0][W_O-1:0] out_data
 );
 
 function automatic logic signed [18:0] round(logic signed [18:0] v);
-	logic [15:0] result;
+	logic signed [15:0] result;
 	logic sum_detect;
 
 	sum_detect = v[0]|v[1];
 	result = (~v[18]&v[2])|(v[18]&v[2]&sum_detect) ? v[18:3] + v[2] : v[18:3];
 
-	return {result,3'd0};
+	return $signed({result,3'd0});
 endfunction : round
 
 // fixed point number
@@ -54,7 +54,7 @@ always_ff @(posedge clk, negedge rst_n) begin : fixed_point_num
 		fixed_point_num_data <= '{default:'0};
 	else
 		for (int i = 0; i < 8; i++)
-			fixed_point_num_data[i] <= in_data[i]<<3;
+			fixed_point_num_data[i] <= $signed(in_data[i]<<<3);
 end
 
 // stage 1
@@ -162,7 +162,7 @@ always_ff @(posedge clk, negedge rst_n) begin : proc_res
 		out_data <= '{default:'0};
 	else
 		for (int i = 0; i < 8; i++)
-			out_data[i] <= (stage6_data[i]>>>2)>>3;
+			out_data[i] <= stage6_data[i]>>>5;
 end
 
 endmodule

@@ -1,4 +1,3 @@
-`timescale 1ns/1ns
 module dct_tb;
 
 bit clk;
@@ -75,15 +74,20 @@ initial
       end
    end
 
+logic [7:0] v_res [7:0];
 initial
    forever @(posedge clk iff rst_n) begin
       for (int i = 0; i < 8; i++) begin
          if(input_data_q[i].size()&&output_data_q[i].size()) begin
-            val[0][i] <= input_data_q[i].pop_front();
-            val[1][i] <= output_data_q[i].pop_front();
-            if(val[0][i]!=='x||val[1][i]!=='x)
-               assert((val[0][i]-val[1][i]==0)||(val[0][i]-val[1][i]==1)||(val[0][i]-val[1][i]==-1)) 
+            val[0][i] <= $signed(input_data_q[i].pop_front());
+            val[1][i] <= $signed(output_data_q[i].pop_front());
+            if(val[0][i]!=='x||val[1][i]!=='x) begin
+               v_res[i] = val[0][i]-val[1][i];
+               assert((v_res[i]==0)||
+                      (v_res[i]==1)||
+                      (v_res[i]==255)) 
                else error_data++;
+            end
          end
       end
       if(input_ctrl_q.size()&&output_ctrl_q.size())
@@ -104,7 +108,7 @@ task send_block();
       in_valid <= 1;
 
       for (int i = 0; i < 8; i++) begin
-         in_data[i] <= 255;
+         in_data[i] <= $urandom_range(0,255);
       end
 
       @(posedge clk);

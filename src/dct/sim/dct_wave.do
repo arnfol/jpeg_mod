@@ -14,9 +14,10 @@ add wave -noupdate -radix unsigned /dct_tb/out_sob
 add wave -noupdate -radix unsigned /dct_tb/out_sof
 add wave -noupdate /dct_tb/error_data
 add wave -noupdate /dct_tb/error_ctrl
+add wave -noupdate -radix decimal -childformat {{{/dct_tb/val[1]} -radix decimal} {{/dct_tb/val[0]} -radix decimal}} -subitemconfig {{/dct_tb/val[1]} {-radix decimal} {/dct_tb/val[0]} {-radix decimal}} /dct_tb/val
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {0 ns} 0}
-quietly wave cursor active 0
+WaveRestoreCursors {{Cursor 1} {3125 ns} 0} {{Cursor 2} {197 ns} 0}
+quietly wave cursor active 2
 configure wave -namecolwidth 150
 configure wave -valuecolwidth 100
 configure wave -justifyvalue left
@@ -31,4 +32,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {9050 ns} {18257 ns}
+WaveRestoreZoom {0 ns} {10500 ns}

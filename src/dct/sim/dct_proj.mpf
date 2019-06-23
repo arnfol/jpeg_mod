@@ -1924,6 +1924,8 @@ MvcHome = $MODEL_TECH/..
 ;    (e.g. SVPrettyPrintFlags=I4S,L20,C256,F4,E50,D5)
 ; SVPrettyPrintFlags=I4S
 
+IgnoreSVAWarning = 0
+IgnoreSVAInfo = 0
 [lmc]
 ; The simulator's interface to Logic Modeling's SmartModel SWIFT software
 libsm = $MODEL_TECH/libsm.sl
