@@ -6,6 +6,13 @@ module hdmi_to_blocks_tb ();
 	parameter Y_RES = 1200;
 	// parameter PIPE = 4;
 
+	localparam H_FRONT_PORCH_CYC = 40;
+	localparam H_BACK_PORCH_CYC = 46;
+	localparam H_SYNC_CYC = 20;
+	localparam V_FRONT_PORCH_CYC = 28;
+	localparam V_BACK_PORCH_CYC = 234;
+	localparam V_SYNC_CYC = 2;
+
 	bit clk;
 	bit en;
 	bit rst_n;
@@ -44,10 +51,10 @@ module hdmi_to_blocks_tb ();
 	------------------------------------------------------------------------------*/
 	always #5 clk = !clk;
 
-	initial begin
-		#1000 $display("%t : Test complete", $time);
-		$stop(); // simulation timeout
-	end
+	// initial begin
+	// 	#0000 $display("%t : Test complete", $time);
+	// 	$stop(); // simulation timeout
+	// end
 
 	int wait_cycles;
 	initial begin 	
@@ -56,46 +63,63 @@ module hdmi_to_blocks_tb ();
 		repeat(2) @(posedge clk);
 		rst_n = 1;
 
-		forever @(posedge clk) begin 
-			hdmi_data_valid <= 1;
-			hdmi_data_y  <= hdmi_data_y  + {N{8'd1}};
-			hdmi_data_cb <= hdmi_data_cb + {N{8'd1}};
-			hdmi_data_cr <= hdmi_data_cr + {N{8'd1}};
-		end
+		repeat(12) send_line();
+
+		$display("%t : Test complete", $time);
+		$stop(); 
 	end
 
 	// /*------------------------------------------------------------------------------
 	// --  Tasks
 	// ------------------------------------------------------------------------------*/
-	// task send_block();
+	task send_line();
 
-	// 	for (int i = 0; i < 32; i++) begin
-	// 		in_sob <= (i == 0);
-	// 		in_sof <= (i == 0) && $urandom_range(1);
-	// 		in_eob <= (i == 31);
-	// 		in_valid <= 1;
+		hdmi_h_sync <= 1;
+		wait_for(H_SYNC_CYC);
+		hdmi_h_sync <= 0;
 
-	// 		for (int i = 0; i < N; i++) begin
-	// 			in_mult[i] <= $random();
-	// 			in_data[i] <= $random();
-	// 		end
+		wait_for(H_BACK_PORCH_CYC);
+		hdmi_data_valid <= 1;
 
-	// 		@(posedge clk);
+		repeat(X_RES/N) begin
+			hdmi_data_y  <= hdmi_data_y  + {N{8'd1}};
+			hdmi_data_cb <= hdmi_data_cb + {N{8'd1}};
+			hdmi_data_cr <= hdmi_data_cr + {N{8'd1}};
+			@(posedge clk);
+		end
 
-	// 		in_sob <= 0;
-	// 		in_sof <= 0;
-	// 		in_eob <= 0;
-	// 		in_valid <= 0;
-	// 	end
+		hdmi_data_y  <= '0;
+		hdmi_data_cb <= '0;
+		hdmi_data_cr <= '0;
+		hdmi_data_valid <= 0;
 
-	// endtask : send_block
+		wait_for(H_FRONT_PORCH_CYC);
 
-	// task wait_for(int cycles);;
+	endtask : send_line
 
-	// 	repeat(cycles) @(posedge clk);
+	task wait_for(int cycles);
+		repeat(cycles) @(posedge clk);
+	endtask : wait_for
 
-	// endtask : wait_for
+	task wait_lines(int lines);
+		repeat(lines) begin
+			hdmi_h_sync <= 1;
+			wait_for(H_SYNC_CYC);
+			hdmi_h_sync <= 0;
+			wait_for(H_BACK_PORCH_CYC);
+			wait_for(X_RES/N);
+			wait_for(H_FRONT_PORCH_CYC);
+		end
+	endtask : wait_lines
 
+	task send_frame();
+		hdmi_v_sync <= 1;
+		wait_lines(V_SYNC_CYC);
+		hdmi_v_sync <= 0;
+		wait_lines(V_BACK_PORCH_CYC);
+		repeat(Y_RES) send_line();
+		wait_lines(V_FRONT_PORCH_CYC);
+	endtask : send_frame
 
 	// /*------------------------------------------------------------------------------
 	// --  CHECKER
