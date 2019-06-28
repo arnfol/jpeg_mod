@@ -63,7 +63,7 @@ module hdmi_to_blocks_tb ();
 		repeat(2) @(posedge clk);
 		rst_n = 1;
 
-		repeat(12) send_line();
+		repeat(18) send_line();
 
 		$display("%t : Test complete", $time);
 		$stop(); 
@@ -82,9 +82,9 @@ module hdmi_to_blocks_tb ();
 		hdmi_data_valid <= 1;
 
 		repeat(X_RES/N) begin
-			hdmi_data_y  <= hdmi_data_y  + {N{8'd1}};
-			hdmi_data_cb <= hdmi_data_cb + {N{8'd1}};
-			hdmi_data_cr <= hdmi_data_cr + {N{8'd1}};
+			hdmi_data_y  <= hdmi_data_y  + 1;
+			hdmi_data_cb <= hdmi_data_cb + 1;
+			hdmi_data_cr <= hdmi_data_cr + 1;
 			@(posedge clk);
 		end
 

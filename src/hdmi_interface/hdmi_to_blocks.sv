@@ -49,6 +49,11 @@ module hdmi_to_blocks #(
 
 	logic next_is_sof;
 
+	logic blk_valid_del;
+	logic blk_eob_del  ;
+	logic blk_sob_del  ;
+	logic blk_sof_del  ;
+
 	/*------------------------------------------------------------------------------
 	--  INPUT BUFFERS
 	------------------------------------------------------------------------------*/
@@ -73,36 +78,24 @@ module hdmi_to_blocks #(
 	always_ff @(posedge clk or negedge rst_n) begin : proc_wr_cntr
 		if(~rst_n) begin
 			wr_cntr <= '0;
-			buf_full <= 0;
 		end else if(wr_cntr_en) begin
-			if(wr_cntr < BUF_DEPTH) begin 
-				wr_cntr <= wr_cntr + 1;
-				buf_full <= (wr_cntr == BUF_DEPTH-2);
-			end else begin 
-				wr_cntr <= '0;
-			end
+			wr_cntr <= (wr_cntr < BUF_DEPTH-1) ? wr_cntr + 1 : '0;
 		end
 	end	
+	
+ 	assign buf_full = (wr_cntr == BUF_DEPTH-1);
 
 	always_ff @(posedge clk or negedge rst_n) begin 
 	 	if(~rst_n) begin
 	 		block <= '0;
 	 		block_line <= '0;
 	 		block_elem <= '0;
-	 		buf_empty <= 0;
 	 	end else if(rd_cntr_en)begin
-	 		buf_empty <= 0;
 	 		if(block_elem == BLOCK_SIZE/N-1) begin // end of block line
 	 			block_elem <= '0;
 		 		if(block_line == BLOCK_SIZE-1) begin // end of block
 		 			block_line <= '0;
-		 			block <= block + 1;
-		 			if(block == X_RES/BLOCK_SIZE-1) begin // end of buffer
-			 			block <= '0;
-		 				buf_empty <= 1;
-		 			end else begin 
-		 			 	buf_empty <= 0;
-		 			end
+		 			block <= (block == X_RES/BLOCK_SIZE-1) ? 0 : block + 1;
 	 			// if not end of block
 		 		end else block_line <= block_line + 1;
 		 	// if not end of block line
@@ -111,6 +104,7 @@ module hdmi_to_blocks #(
 	end
 
 	assign rd_cntr = block_elem + block_line*X_RES/N + block*BLOCK_SIZE/N;
+	assign buf_empty = (block_elem == BLOCK_SIZE/N-1) && (block_line == BLOCK_SIZE-1) && (block == X_RES/BLOCK_SIZE-1);
 
 	/*------------------------------------------------------------------------------
 	--  Control logic
@@ -137,14 +131,12 @@ module hdmi_to_blocks #(
 	always_ff @(posedge clk or negedge rst_n) begin 
 		if(~rst_n) begin
 			rd_cntr_en <= 0;
-			rd_cntr_en_del <= 0;
 		end else begin
 			if(buf_full) begin 
 				rd_cntr_en <= 1;
 			end else if(buf_empty) begin
 				rd_cntr_en <= 0;
 			end
-			rd_cntr_en_del <= rd_cntr_en;
 		end
 	end
 
@@ -160,18 +152,25 @@ module hdmi_to_blocks #(
 			blk_data_y  <= '0;
 			blk_data_cr <= '0;
 			blk_data_cb <= '0;
-			blk_valid <= 0;
-			blk_eob <= 0;
-			blk_sob <= 0;
-			blk_sof <= 0;
 		end else begin
 			blk_data_y  <= (!buf_select) ? buf2_o[8*N-1   : 0]     : buf1_o[8*N-1   : 0]    ;
 			blk_data_cr <= (!buf_select) ? buf2_o[8*N*2-1 : 8*N]   : buf1_o[8*N*2-1 : 8*N]  ;
 			blk_data_cb <= (!buf_select) ? buf2_o[8*N*3-1 : 8*N*2] : buf1_o[8*N*3-1 : 8*N*2];
-			blk_valid <= rd_cntr_en_del; 
-			blk_eob <= (block_elem == BLOCK_SIZE/N-1) && (block_line == BLOCK_SIZE-1);
-			blk_sob <= (block_elem == 0) && (block_line == 0);
-			blk_sof <= (block_elem == 0) && (block_line == 0) && next_is_sof;
+		end
+	end
+
+	// additional pipe *_del for block memory delay compensation
+	always_ff @(posedge clk or negedge rst_n) begin 
+		if(~rst_n) begin
+			{blk_valid, blk_valid_del} <= '0;
+			{blk_eob, blk_eob_del} <= '0;
+			{blk_sob, blk_sob_del} <= '0;
+			{blk_sof, blk_sof_del} <= '0;
+		end else begin
+			{blk_valid, blk_valid_del} <= {blk_valid_del, rd_cntr_en}; 
+			{blk_eob, blk_eob_del} <= {blk_eob_del, (block_elem == BLOCK_SIZE/N-1) && (block_line == BLOCK_SIZE-1)};
+			{blk_sob, blk_sob_del} <= {blk_sob_del, (block_elem == 0) && (block_line == 0)};
+			{blk_sof, blk_sof_del} <= {blk_sof_del, (block_elem == 0) && (block_line == 0) && next_is_sof};
 		end
 	end
 
