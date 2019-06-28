@@ -4,13 +4,12 @@ module hdmi_to_blocks_tb ();
 	parameter N = 2;
 	parameter X_RES = 2160;
 	parameter Y_RES = 1200;
-	// parameter PIPE = 4;
 
 	localparam H_FRONT_PORCH_CYC = 40;
 	localparam H_BACK_PORCH_CYC = 46;
 	localparam H_SYNC_CYC = 20;
 	localparam V_FRONT_PORCH_CYC = 28;
-	localparam V_BACK_PORCH_CYC = 234;
+	localparam V_BACK_PORCH_CYC = 24; // Original 234, but I don't want to wait so long
 	localparam V_SYNC_CYC = 2;
 
 	bit clk;
@@ -32,29 +31,15 @@ module hdmi_to_blocks_tb ();
 	logic blk_sob;
 	logic blk_sof;
 
-	// bit in_valid;
-	// logic signed [N-1:0][15:0] in_data;
-	// logic unsigned [N-1:0][9:0] in_mult;
-	// bit in_eob;
-	// bit in_sob;
-	// bit in_sof;
-
-	// logic out_valid;
-	// logic signed [N-1:0][15:0] out_data;
-	// logic out_eob;
-	// logic out_sob;
-	// logic out_sof;
-
-
 	/*------------------------------------------------------------------------------
 	--  Controls
 	------------------------------------------------------------------------------*/
 	always #5 clk = !clk;
 
-	// initial begin
-	// 	#0000 $display("%t : Test complete", $time);
-	// 	$stop(); // simulation timeout
-	// end
+	initial begin
+		#1000000 $display("%t : TIMEOUT : Test complete", $time);
+		$stop(); // simulation timeout
+	end
 
 	int wait_cycles;
 	initial begin 	
@@ -63,15 +48,16 @@ module hdmi_to_blocks_tb ();
 		repeat(2) @(posedge clk);
 		rst_n = 1;
 
-		repeat(18) send_line();
+		send_frame();
+		// repeat(18) send_line();
 
-		$display("%t : Test complete", $time);
+		$display("%t : Sending done", $time);
 		$stop(); 
 	end
 
-	// /*------------------------------------------------------------------------------
-	// --  Tasks
-	// ------------------------------------------------------------------------------*/
+	/*------------------------------------------------------------------------------
+	--  Tasks
+	------------------------------------------------------------------------------*/
 	task send_line();
 
 		hdmi_h_sync <= 1;
@@ -88,9 +74,9 @@ module hdmi_to_blocks_tb ();
 			@(posedge clk);
 		end
 
-		hdmi_data_y  <= '0;
-		hdmi_data_cb <= '0;
-		hdmi_data_cr <= '0;
+		// hdmi_data_y  <= '0;
+		// hdmi_data_cb <= '0;
+		// hdmi_data_cr <= '0;
 		hdmi_data_valid <= 0;
 
 		wait_for(H_FRONT_PORCH_CYC);
@@ -121,41 +107,9 @@ module hdmi_to_blocks_tb ();
 		wait_lines(V_FRONT_PORCH_CYC);
 	endtask : send_frame
 
-	// /*------------------------------------------------------------------------------
-	// --  CHECKER
-	// ------------------------------------------------------------------------------*/
-	// bit [PIPE-1:0] chk_valid, chk_eob, chk_sob, chk_sof;
-	// bit [N-1:0][PIPE-1:0][15:0] chk_data;
-
-	// always @(posedge clk) begin	
-	// 	if(en) begin
-	// 		for (int i = 0; i < N; i++) begin
-	// 			chk_data[i] <= {chk_data[i], 16'(in_mult[i]*in_data[i])};
-	// 		end
-	// 		chk_valid <= {chk_valid, in_valid};
-	// 		chk_eob <= {chk_eob, in_eob};
-	// 		chk_sob <= {chk_sob, in_sob};
-	// 		chk_sof <= {chk_sof, in_sof};
-	// 	end
-	// end
-
-	// always @(posedge clk) begin 
-	// 	assert(chk_valid[PIPE-1] == out_valid);
-	// 	if(out_valid) begin 
-	// 		assert(chk_eob[PIPE-1] == out_eob);
-	// 		assert(chk_sob[PIPE-1] == out_sob);
-	// 		assert(chk_sof[PIPE-1] == out_sof);
-	// 		for (int i = 0; i < N; i++) begin
-	// 			assert(chk_data[i][PIPE-1] == out_data[i]);
-	// 		end
-	// 	end
-	// end
-
-
 	/*------------------------------------------------------------------------------
 	--  DUT
 	------------------------------------------------------------------------------*/
-	
 	hdmi_to_blocks #(.N(N), .X_RES(X_RES), .Y_RES(Y_RES)) i_hdmi_to_blocks (
 		.clk            (clk            ),
 		.en             (en             ),

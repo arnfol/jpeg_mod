@@ -1,10 +1,38 @@
+/*
+    ------------------------------------------------------------------------------
+    -- The MIT License (MIT)
+    --
+    -- Copyright (c) <2019> Konovalov Vitaliy
+    --
+    -- Permission is hereby granted, free of charge, to any person obtaining a copy
+    -- of this software and associated documentation files (the "Software"), to deal
+    -- in the Software without restriction, including without limitation the rights
+    -- to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+    -- copies of the Software, and to permit persons to whom the Software is
+    -- furnished to do so, subject to the following conditions:
+    --
+    -- The above copyright notice and this permission notice shall be included in
+    -- all copies or substantial portions of the Software.
+    --
+    -- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    -- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    -- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    -- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    -- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+    -- THE SOFTWARE.
+    -------------------------------------------------------------------------------
+    Project     : JPEG_MOD
+    Author      : Konovalov Vitaliy
+    Description : Converts HDMI frames to blocks 8x8. 
+                  
+*/
 module hdmi_to_blocks #(
 	N     = 2   , // bus width
 	X_RES = 2160, // X resolution, should be dividable by 8 (block width)
 	Y_RES = 1200  // Y resolution, should be dividable by 8 (block height)
 ) (
 	input                            clk            ,
-	input                            en             ,
 	input                            rst_n          ,
 	// hdmi interface
 	input                            hdmi_v_sync    ,
@@ -18,9 +46,9 @@ module hdmi_to_blocks #(
 	output logic signed [N-1:0][7:0] blk_data_y     ,
 	output logic signed [N-1:0][7:0] blk_data_cr    ,
 	output logic signed [N-1:0][7:0] blk_data_cb    ,
-	output logic                     blk_eob        ,
-	output logic                     blk_sob        ,
-	output logic                     blk_sof
+	output logic                     blk_eob        , // end of block
+	output logic                     blk_sob        , // start of block
+	output logic                     blk_sof          // start of frame
 );
 
 	localparam BLOCK_SIZE = 8;
@@ -49,10 +77,10 @@ module hdmi_to_blocks #(
 
 	logic next_is_sof;
 
-	logic blk_valid_del;
-	logic blk_eob_del  ;
-	logic blk_sob_del  ;
-	logic blk_sof_del  ;
+	logic [1:0] blk_valid_del;
+	logic [1:0] blk_eob_del  ;
+	logic [1:0] blk_sob_del  ;
+	logic [1:0] blk_sof_del  ;
 
 	/*------------------------------------------------------------------------------
 	--  INPUT BUFFERS
@@ -82,7 +110,7 @@ module hdmi_to_blocks #(
 			wr_cntr <= (wr_cntr < BUF_DEPTH-1) ? wr_cntr + 1 : '0;
 		end
 	end	
-	
+
  	assign buf_full = (wr_cntr == BUF_DEPTH-1);
 
 	always_ff @(posedge clk or negedge rst_n) begin 
@@ -162,16 +190,21 @@ module hdmi_to_blocks #(
 	// additional pipe *_del for block memory delay compensation
 	always_ff @(posedge clk or negedge rst_n) begin 
 		if(~rst_n) begin
-			{blk_valid, blk_valid_del} <= '0;
-			{blk_eob, blk_eob_del} <= '0;
-			{blk_sob, blk_sob_del} <= '0;
-			{blk_sof, blk_sof_del} <= '0;
+			blk_valid_del <= '0;
+			blk_eob_del <= '0;
+			blk_sob_del <= '0;
+			blk_sof_del <= '0;
 		end else begin
-			{blk_valid, blk_valid_del} <= {blk_valid_del, rd_cntr_en}; 
-			{blk_eob, blk_eob_del} <= {blk_eob_del, (block_elem == BLOCK_SIZE/N-1) && (block_line == BLOCK_SIZE-1)};
-			{blk_sob, blk_sob_del} <= {blk_sob_del, (block_elem == 0) && (block_line == 0)};
-			{blk_sof, blk_sof_del} <= {blk_sof_del, (block_elem == 0) && (block_line == 0) && next_is_sof};
+			blk_valid_del <= {blk_valid_del, rd_cntr_en}; 
+			blk_eob_del <= {blk_eob_del, (block_elem == BLOCK_SIZE/N-1) && (block_line == BLOCK_SIZE-1)};
+			blk_sob_del <= {blk_sob_del, (block_elem == 0) && (block_line == 0)};
+			blk_sof_del <= {blk_sof_del, (block_elem == 0) && (block_line == 0) && next_is_sof};
 		end
 	end
+
+	assign blk_valid = blk_valid_del[1];
+	assign blk_eob = blk_eob_del[1] && blk_valid_del[1];
+	assign blk_sob = blk_sob_del[1] && blk_valid_del[1];
+	assign blk_sof = blk_sof_del[1] && blk_valid_del[1];
 
 endmodule
