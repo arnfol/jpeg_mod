@@ -112,7 +112,6 @@ module hdmi_to_blocks_tb ();
 	------------------------------------------------------------------------------*/
 	hdmi_to_blocks #(.N(N), .X_RES(X_RES), .Y_RES(Y_RES)) i_hdmi_to_blocks (
 		.clk            (clk            ),
-		.en             (en             ),
 		.rst_n          (rst_n          ),
 		.hdmi_v_sync    (hdmi_v_sync    ),
 		.hdmi_h_sync    (hdmi_h_sync    ),

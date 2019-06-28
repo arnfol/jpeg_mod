@@ -77,10 +77,10 @@ module hdmi_to_blocks #(
 
 	logic next_is_sof;
 
-	logic [1:0] blk_valid_del;
-	logic [1:0] blk_eob_del  ;
-	logic [1:0] blk_sob_del  ;
-	logic [1:0] blk_sof_del  ;
+	logic [2:0] blk_valid_del;
+	logic [2:0] blk_eob_del  ;
+	logic [2:0] blk_sob_del  ;
+	logic [2:0] blk_sof_del  ;
 
 	/*------------------------------------------------------------------------------
 	--  INPUT BUFFERS
@@ -107,7 +107,7 @@ module hdmi_to_blocks #(
 		if(~rst_n) begin
 			wr_cntr <= '0;
 		end else if(wr_cntr_en) begin
-			wr_cntr <= (wr_cntr < BUF_DEPTH-1) ? wr_cntr + 1 : '0;
+			wr_cntr <= (wr_cntr < BUF_DEPTH-1) ? wr_cntr + 1'b1 : '0;
 		end
 	end	
 
@@ -123,16 +123,25 @@ module hdmi_to_blocks #(
 	 			block_elem <= '0;
 		 		if(block_line == BLOCK_SIZE-1) begin // end of block
 		 			block_line <= '0;
-		 			block <= (block == X_RES/BLOCK_SIZE-1) ? 0 : block + 1;
+		 			block <= (block == X_RES/BLOCK_SIZE-1) ? 0 : block + 1'b1;
 	 			// if not end of block
-		 		end else block_line <= block_line + 1;
+		 		end else block_line <= block_line + 1'b1;
 		 	// if not end of block line
-	 		end else block_elem <= block_elem + 1;
+	 		end else block_elem <= block_elem + 1'b1;
 	 	end
 	end
 
-	assign rd_cntr = block_elem + block_line*X_RES/N + block*BLOCK_SIZE/N;
-	assign buf_empty = (block_elem == BLOCK_SIZE/N-1) && (block_line == BLOCK_SIZE-1) && (block == X_RES/BLOCK_SIZE-1);
+	// additional pipeline for synthesis
+	always_ff @(posedge clk or negedge rst_n) begin 
+		if(~rst_n) begin
+			rd_cntr <= '0;
+			buf_empty <= 0;
+		end else begin
+			rd_cntr <= block_elem + block_line*X_RES/N + block*BLOCK_SIZE/N;
+			buf_empty <= (block_elem == BLOCK_SIZE/N-2) && (block_line == BLOCK_SIZE-1) && (block == X_RES/BLOCK_SIZE-1);
+		end
+	end
+
 
 	/*------------------------------------------------------------------------------
 	--  Control logic
@@ -202,9 +211,9 @@ module hdmi_to_blocks #(
 		end
 	end
 
-	assign blk_valid = blk_valid_del[1];
-	assign blk_eob = blk_eob_del[1] && blk_valid_del[1];
-	assign blk_sob = blk_sob_del[1] && blk_valid_del[1];
-	assign blk_sof = blk_sof_del[1] && blk_valid_del[1];
+	assign blk_valid = blk_valid_del[$high(blk_valid_del)];
+	assign blk_eob = blk_eob_del[$high(blk_eob_del)] && blk_valid_del[$high(blk_valid_del)];
+	assign blk_sob = blk_sob_del[$high(blk_sob_del)] && blk_valid_del[$high(blk_valid_del)];
+	assign blk_sof = blk_sof_del[$high(blk_sof_del)] && blk_valid_del[$high(blk_valid_del)];
 
 endmodule
