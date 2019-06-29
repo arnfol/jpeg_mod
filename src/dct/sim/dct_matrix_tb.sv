@@ -5,28 +5,28 @@ bit clk;
 bit rst_n;
 
 // test
-logic [7:0] input_data_q   [7:0][$]    ;
-logic [7:0] output_data_q  [7:0][$]    ;
+logic [7:0] input_data_q   [1:0][$]    ;
+logic [7:0] output_data_q  [1:0][$]    ;
 logic [2:0] input_ctrl_q   [  $]       ;
 logic [2:0] output_ctrl_q  [  $]       ;
-logic [7:0] val            [1:0][7:0]  ;
+logic [7:0] val            [1:0][1:0]  ;
 int         error_data              = 0;
 int         error_ctrl              = 0;
 
 logic            in_valid;
-logic [7:0][7:0] in_data ;
+logic [1:0][7:0] in_data ;
 logic            in_eob  ;
 logic            in_sob  ;
 logic            in_sof  ;
 
 logic            out_valid;
-logic [7:0][7:0] out_data ;
+logic [1:0][7:0] out_data ;
 logic            out_eob  ;
 logic            out_sob  ;
 logic            out_sof  ;
 
 logic                    out_valid_t;
-logic signed [7:0][15:0] out_data_t ;
+logic signed [1:0][15:0] out_data_t ;
 logic                    out_eob_t  ;
 logic                    out_sob_t  ;
 logic                    out_sof_t  ;
@@ -37,7 +37,7 @@ logic                    out_sof_t  ;
 always #5 clk = !clk;
 
 initial begin
-   #10000 $display("%t : Test complete", $time);
+   #50000 $display("%t : Test complete", $time);
    $display("Data errors: %d",error_data);
    $display("Ctrl errors: %d",error_ctrl);
    $stop(); // simulation timeout
@@ -64,31 +64,31 @@ end
 initial
    forever @(posedge clk iff rst_n) begin
       if(in_valid) begin
-         for (int i = 0; i < 8; i++)
+         for (int i = 0; i < 2; i++)
             input_data_q[i].push_back(in_data[i]);
          input_ctrl_q.push_back({in_eob,in_sob,in_sof});
       end
       if(out_valid) begin
-         for (int i = 0; i < 8; i++)
+         for (int i = 0; i < 2; i++)
             output_data_q[i].push_back(out_data[i]);
          output_ctrl_q.push_back({out_eob,out_sob,out_sof});
       end
    end
 
-logic [7:0] v_res [7:0];
+logic [7:0] v_res [1:0];
 initial
    forever @(posedge clk iff rst_n) begin
-      for (int i = 0; i < 8; i++) begin
+      for (int i = 0; i < 2; i++) begin
          if(input_data_q[i].size()&&output_data_q[i].size()) begin
             val[0][i] <= $signed(input_data_q[i].pop_front());
             val[1][i] <= $signed(output_data_q[i].pop_front());
             if(val[0][i]!=='x||val[1][i]!=='x) begin
                v_res[i] = val[0][i]-val[1][i];
-               assert((val[0][i]-val[1][i]==0)||
-                  (v_res[i]==1)||
-                  (v_res[i]==255)||
-                  (v_res[i]==254)||
-                  (v_res[i]==2)) 
+               assert((v_res[i]==0)||
+                      (v_res[i]==1)||
+                      (v_res[i]==255)||
+                      (v_res[i]==254)||
+                      (v_res[i]==2)) 
                else begin 
                error_data++;
                end
@@ -106,14 +106,14 @@ initial
 ------------------------------------------------------------------------------*/
 task send_block();
 
-   for (int i = 0; i < 8; i++) begin
+   for (int i = 0; i < 32; i++) begin
       in_sob <= (i == 0);
       in_sof <= (i == 0) && $urandom_range(1);
-      in_eob <= (i == 7);
+      in_eob <= (i == 31);
       in_valid <= 1;
 
-      for (int i = 0; i < 8; i++) begin
-         in_data[i] <= $urandom_range(1,255);
+      for (int i = 0; i < 2; i++) begin
+         in_data[i] <= $urandom_range(0,255);
       end
 
       @(posedge clk);
@@ -137,6 +137,7 @@ endtask : wait_for
 dct_ft_matrix i_dct_ft_m (
    .clk      (clk        ),
    .rst_n    (rst_n      ),
+   .en       (1          ),
    .in_valid (in_valid   ),
    .in_data  (in_data    ),
    .in_eob   (in_eob     ),
@@ -152,6 +153,7 @@ dct_ft_matrix i_dct_ft_m (
 dct_it_matrix i_dct_it_m (
    .clk      (clk        ),
    .rst_n    (rst_n      ),
+   .en       (1          ),
    .in_valid (out_valid_t),
    .in_data  (out_data_t ),
    .in_eob   (out_eob_t  ),
