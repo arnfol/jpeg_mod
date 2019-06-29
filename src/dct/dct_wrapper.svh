@@ -40,11 +40,11 @@ logic [PIPE-1:0] eob, sob, sof, valid;
 always_ff @(posedge clk, negedge rst_n) 
 	if(~rst_n)
 		{eob, sob, sof, valid} <= '0;
-	else begin
+	else if(en) begin
 		eob   <= {eob, in_eob};
 		sob   <= {sob, in_sob};
 		sof   <= {sof, in_sof};
-		valid <= {valid, in_valid & en};
+		valid <= {valid, in_valid};
 	end
 
 assign out_eob   = eob[PIPE-1];
