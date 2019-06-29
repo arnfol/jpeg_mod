@@ -81,8 +81,6 @@ always_ff @(posedge clk, negedge rst_n)
 		out_valid <= 0;
 	else if(in_eob & in_valid & en)
 		out_valid <= 1;
-	else if(out_eob & out_valid & en)
-		out_valid <= 0;
 
 always_ff @(posedge clk, negedge rst_n)
 	if(~rst_n)
