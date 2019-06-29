@@ -24,7 +24,7 @@
     -------------------------------------------------------------------------------
     Project     : JPEG_MOD
     Author      : Allavi Ali
-    Description : binDCT Inverse Transform algorithm
+    Description : binDCT Inverse Transform algorithm. 8 step pipelined.
                   
 */
 

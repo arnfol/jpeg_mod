@@ -24,7 +24,7 @@
     -------------------------------------------------------------------------------
     Project     : JPEG_MOD
     Author      : Allavi Ali
-    Description : binDCT Forward Transform algorithm
+    Description : binDCT Forward Transform algorithm. 8 step pipelined.
                   
 */
 
