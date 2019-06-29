@@ -65,7 +65,6 @@ module hdmi_to_blocks #(
 	logic                         wr_cntr_en;
 	logic [$clog2(BUF_DEPTH)-1:0] rd_cntr   ;
 	logic                         rd_cntr_en;
-	logic                         rd_cntr_en_del;
 
 	logic [$clog2(X_RES/BLOCK_SIZE)-1:0] block     ;
 	logic [      $clog2(BLOCK_SIZE)-1:0] block_line;
@@ -76,6 +75,7 @@ module hdmi_to_blocks #(
 	logic buf_select;
 
 	logic next_is_sof;
+	logic first_frame;
 
 	logic [2:0] blk_valid_del;
 	logic [2:0] blk_eob_del  ;
@@ -151,9 +151,14 @@ module hdmi_to_blocks #(
 	always_ff @(posedge clk or negedge rst_n) begin 
 		if(~rst_n) begin
 			next_is_sof <= 0;
+			first_frame <= 0;
 		end else begin
-			if(hdmi_v_sync) next_is_sof <= 1;
-			else if(blk_sof) next_is_sof <= 0;
+			if(hdmi_v_sync) begin
+				next_is_sof <= 1;
+				first_frame <= 1;
+			end else if(blk_sof) begin
+				next_is_sof <= 0;
+			end
 		end
 	end
 
@@ -178,8 +183,8 @@ module hdmi_to_blocks #(
 	end
 
 	assign wr_cntr_en = buf1_wr_en || buf2_wr_en;
-	assign buf1_wr_en = !buf_select && hdmi_data_valid;
-	assign buf2_wr_en =  buf_select && hdmi_data_valid;
+	assign buf1_wr_en = !buf_select && hdmi_data_valid && first_frame;
+	assign buf2_wr_en =  buf_select && hdmi_data_valid && first_frame;
 
 	/*------------------------------------------------------------------------------
 	--  Output pipeline
