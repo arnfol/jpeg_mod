@@ -1,6 +1,7 @@
 (
 	input                              clk      ,
 	input                              rst_n    ,
+	input                              en       ,
 	// input interface
 	input                              in_valid ,
 	`ifdef DCT_FT
@@ -43,7 +44,7 @@ always_ff @(posedge clk, negedge rst_n)
 		eob   <= {eob, in_eob};
 		sob   <= {sob, in_sob};
 		sof   <= {sof, in_sof};
-		valid <= {valid, in_valid};
+		valid <= {valid, in_valid & en};
 	end
 
 assign out_eob   = eob[PIPE-1];
