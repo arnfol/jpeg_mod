@@ -61,7 +61,7 @@ module blocks_to_hdmi #(
 	localparam V_BACK_PORCH_CYC = 234;
 	localparam V_SYNC_CYC = 2;
 
-	localparam H_CNTR_MAX = H_FRONT_PORCH_CYC + H_BACK_PORCH_CYC + H_SYNC_CYC;
+	localparam LINE_WIDTH = X_RES/N + H_FRONT_PORCH_CYC + H_BACK_PORCH_CYC + H_SYNC_CYC;
 
 	logic [8*3*N-1:0] buf1 [BUF_DEPTH];
 	logic             buf1_wr_en;
@@ -87,13 +87,6 @@ module blocks_to_hdmi #(
 	logic buf_full  ;
 	logic buf_select;
 
-	logic next_is_sof;
-
-	logic [2:0] blk_valid_del;
-	logic [2:0] blk_eob_del  ;
-	logic [2:0] blk_sob_del  ;
-	logic [2:0] blk_sof_del  ;
-
 	/*------------------------------------------------------------------------------
 	--  INPUT BUFFERS
 	------------------------------------------------------------------------------*/
@@ -115,7 +108,7 @@ module blocks_to_hdmi #(
 	always_ff @(posedge clk or negedge rst_n) begin 
 		if(~rst_n) begin
 			{pipe_data_cb, pipe_data_cr, pipe_data_y} <= '0;
-		end else if() begin
+		end else begin
 			{pipe_data_cb, pipe_data_cr, pipe_data_y} <= {blk_data_cb, blk_data_cr, blk_data_y};
 		end
 	end
@@ -179,6 +172,15 @@ module blocks_to_hdmi #(
 	assign buf1_wr_en = !buf_select && blk_data_valid;
 	assign buf2_wr_en =  buf_select && blk_data_valid;
 	
+	always_ff @(posedge clk or negedge rst_n) begin 
+		if(~rst_n) begin
+			got_sof <= 0;
+		end else begin
+			if(blk_valid && blk_sof) got_sof <= 1;
+			else if(next_state == FRAME_F_PORCH) got_sof <= 0;
+		end
+	end
+
 
 	always_ff @(posedge clk or negedge rst_n) begin 
 		if(~rst_n) begin
@@ -238,10 +240,11 @@ module blocks_to_hdmi #(
 
 			FRAME_F_PORCH : begin 
 				next_empty_cntr = empty_cntr + 1;
-				hdmi_h_sync = (h_sync_cntr > H_FRONT_PORCH_CYC-1) && (h_sync_cntr < H_FRONT_PORCH_CYC+H_SYNC_CYC-1);
+				hdmi_h_sync =    (empty_cntr > X_RES/N+H_FRONT_PORCH_CYC-1) 
+				              && (empty_cntr < X_RES/N+H_FRONT_PORCH_CYC+H_SYNC_CYC-1);
 
-				if(empty_cntr == X_RES/N+H_FRONT_PORCH_CYC+H_BACK_PORCH_CYC+H_SYNC_CYC-1) begin 
-					if(line_num >= V_FRONT_PORCH_CYC) begin
+				if(empty_cntr == LINE_WIDTH-1) begin 
+					if(line_num >= V_FRONT_PORCH_CYC-1) begin
 						next_state = FRAME_SYNC;
 						next_line_num = '0;
 					end else begin 
@@ -252,10 +255,40 @@ module blocks_to_hdmi #(
 			end
 
 			FRAME_SYNC : begin 
-				next_v_sync_cntr = v_sync_cntr + 1;
+				next_empty_cntr = empty_cntr + 1;
+				hdmi_v_sync = 1;
+				hdmi_h_sync =    (empty_cntr > X_RES/N+H_FRONT_PORCH_CYC-1) 
+				              && (empty_cntr < X_RES/N+H_FRONT_PORCH_CYC+H_SYNC_CYC-1);
 
-				hdmi_v_sync =
-				hdmi_h_sync =
+				if(empty_cntr == LINE_WIDTH-1) begin 
+					if(line_num >= V_SYNC_CYC-1) begin
+						next_state = FRAME_B_PORCH;
+						next_line_num = '0;
+					end else begin 
+						next_state = FRAME_SYNC;
+						next_line_num = line_num + 1;
+					end
+				end
+			end
+
+			FRAME_B_PORCH : begin 
+				next_empty_cntr = empty_cntr + 1;
+				hdmi_h_sync =    (empty_cntr > X_RES/N+H_FRONT_PORCH_CYC-1) 
+				              && (empty_cntr < X_RES/N+H_FRONT_PORCH_CYC+H_SYNC_CYC-1);
+
+				if(empty_cntr == LINE_WIDTH-1) begin 
+					if(line_num >= V_BACK_PORCH_CYC-1) begin
+						if(got_sof) next_state = LINE_DATA;
+						else begin 
+							// TODO: raise error
+							next_state = IDLE;
+						end
+						next_line_num = '0;
+					end else begin 
+						next_state = FRAME_B_PORCH;
+						next_line_num = line_num + 1;
+					end
+				end
 			end
 
 			default : begin 
