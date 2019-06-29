@@ -59,11 +59,11 @@ module flow_mult #(
 	always_ff @(posedge clk or negedge rst_n) begin 
 		if(~rst_n) begin
 			{eob, sob, sof, valid} <= '0;
-		end else begin
+		end else if(en) begin
 			eob <= {eob, in_eob};
 			sob <= {sob, in_sob};
 			sof <= {sof, in_sof};
-			valid <= {valid, in_valid & en};
+			valid <= {valid, in_valid};
 		end
 	end
 
