@@ -5,6 +5,7 @@ add wave -noupdate /blocks_buf_tb/i_blocks_buf/rst_n
 add wave -noupdate /blocks_buf_tb/i_blocks_buf/overflow
 add wave -noupdate /blocks_buf_tb/i_blocks_buf/fifo_empty
 add wave -noupdate /blocks_buf_tb/i_blocks_buf/fifo_full
+add wave -noupdate -radix unsigned /blocks_buf_tb/i_blocks_buf/scfifo_component/usedw
 add wave -noupdate -expand -group OUT /blocks_buf_tb/i_blocks_buf/out_data_cb
 add wave -noupdate -expand -group OUT /blocks_buf_tb/i_blocks_buf/out_data_cr
 add wave -noupdate -expand -group OUT /blocks_buf_tb/i_blocks_buf/out_data_y
@@ -21,8 +22,8 @@ add wave -noupdate -expand -group IN /blocks_buf_tb/i_blocks_buf/in_sob
 add wave -noupdate -expand -group IN /blocks_buf_tb/i_blocks_buf/in_sof
 add wave -noupdate -expand -group IN /blocks_buf_tb/i_blocks_buf/in_valid
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {771341 ps} 0}
-quietly wave cursor active 1
+WaveRestoreCursors {{Cursor 1} {832268 ps} 0} {{Cursor 2} {4634175 ps} 0}
+quietly wave cursor active 2
 configure wave -namecolwidth 150
 configure wave -valuecolwidth 100
 configure wave -justifyvalue left
@@ -37,4 +38,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {688270 ps} {1221172 ps}
+WaveRestoreZoom {3857891 ps} {8286355 ps}

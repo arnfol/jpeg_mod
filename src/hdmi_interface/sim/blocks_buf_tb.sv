@@ -59,7 +59,20 @@ module blocks_buf_tb ();
 		end
 	end
 
-	assign out_ready = out_valid;
+
+	bit not_first_sof;
+	initial begin 
+		out_ready = 1;
+		forever	@(posedge clk) begin 
+			if(out_valid && out_sof && !not_first_sof) begin 
+				not_first_sof <= 1;
+				out_ready <= 0;
+				repeat(SIZE-5) @(posedge clk);
+			end else begin 
+				out_ready <= 1;
+			end
+		end
+	end
 
 	/*------------------------------------------------------------------------------
 	--  Tasks
