@@ -36,13 +36,12 @@ module blocks_to_hdmi_tb ();
 	always #5 clk = !clk;
 
 	initial begin
-		#1000 $display("%t : TIMEOUT : Test complete", $time);
+		#100000 $display("%t : TIMEOUT : Test complete", $time);
 		$stop(); // simulation timeout
 	end
 
 	int wait_cycles;
 	initial begin 	
-		en = 1;
 		rst_n = 0;
 		repeat(2) @(posedge clk);
 		rst_n = 1;
@@ -60,10 +59,10 @@ module blocks_to_hdmi_tb ();
 	task send_block(bit sof=0);
 
 		for (int i = 0; i < 32; i++) begin
-			in_sob <= (i == 0);
-			in_sof <= (i == 0) && sof;
-			in_eob <= (i == 31);
-			in_valid <= 1;
+			blk_sob <= (i == 0);
+			blk_sof <= (i == 0) && sof;
+			blk_eob <= (i == 31);
+			blk_valid <= 1;
 
 			blk_data_y <= blk_data_y + 1;
 			blk_data_cr <= blk_data_cr + 1;
@@ -71,10 +70,10 @@ module blocks_to_hdmi_tb ();
 
 			@(posedge clk);
 
-			in_sob <= 0;
-			in_sof <= 0;
-			in_eob <= 0;
-			in_valid <= 0;
+			blk_sob <= 0;
+			blk_sof <= 0;
+			blk_eob <= 0;
+			blk_valid <= 0;
 		end
 
 	endtask : send_block
@@ -88,11 +87,11 @@ module blocks_to_hdmi_tb ();
 	task send_8_lines(bit sof=0);
 		send_block(sof);
 		repeat(X_RES/8-1) send_block();
-		wait_for(H_FRONT_PORCH_CYC+H_BACK_PORCH_CYC+H_SYNC_CYC);
+		wait_for((H_FRONT_PORCH_CYC+H_BACK_PORCH_CYC+H_SYNC_CYC)*8);
 	endtask : send_8_lines
 
 	task send_frame();
-		send_8_lines(sof=1);
+		send_8_lines(1);
 		repeat((X_RES/8)*(Y_RES/8-1)) send_block();
 		wait_for((V_FRONT_PORCH_CYC+V_BACK_PORCH_CYC+V_SYNC_CYC)*(X_RES/N+H_FRONT_PORCH_CYC+H_BACK_PORCH_CYC+H_SYNC_CYC));
 	endtask : send_frame

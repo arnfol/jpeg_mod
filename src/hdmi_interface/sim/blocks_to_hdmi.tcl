@@ -4,7 +4,7 @@
 
 set worklib "work"
 set top_lvl "blocks_to_hdmi_tb"
-set macro_file "";#"blocks_to_hdmi_wave.do"
+set macro_file "blocks_to_hdmi_wave.do"
 
 # -------------------------------------------------------------------
 # make libs
