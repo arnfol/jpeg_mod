@@ -97,7 +97,7 @@ always_ff @(posedge clk, negedge rst_n)
 always_ff @(posedge clk, negedge rst_n)
 	if(~rst_n)
 		up_in_valid <= 0;
-	else if(&up_counter & en)
+	else if(&up_counter & in_valid & en)
 		up_in_valid <= 1;
 	else if(en)
 		up_in_valid <= 0;
@@ -131,10 +131,14 @@ always_ff @(posedge clk, negedge rst_n)
 always_ff @(posedge clk, negedge rst_n) 
 	if(~rst_n)
 		{down_out_sob, down_out_sof, down_out_eob} <= '0;
-	else if(en) begin
-		down_out_eob <= {down_out_eob, dct_vp_out_eob};
+	else if(dct_vp_out_valid & en) begin
+		down_out_eob <= dct_vp_out_eob;
 		down_out_sob <= dct_vp_out_sob;
 		down_out_sof <= dct_vp_out_sof;
+	end
+	else if(en) begin 
+		down_out_eob <= down_out_eob<<1;
+		{down_out_sob, down_out_sof} <= '0;
 	end
 
 // horizontal pass input
