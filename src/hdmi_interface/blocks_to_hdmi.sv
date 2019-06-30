@@ -229,6 +229,8 @@ module blocks_to_hdmi #(
 		v_sync           = 0;
 		next_h_sync_cntr = h_sync_cntr;
 		next_line_num    = line_num;
+		next_pix_cntr    = pix_cntr;
+		next_state       = state;
 
 		case (state)
 			IDLE : begin
