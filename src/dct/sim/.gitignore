@@ -1,0 +1,7 @@
+altera_mf/
+lpm_ver/
+work/
+*.ini
+*.wlf
+*.mpf
+*.mti
