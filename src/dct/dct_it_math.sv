@@ -52,9 +52,16 @@ logic signed [18:0] fixed_point_num_data [7:0];
 always_ff @(posedge clk, negedge rst_n) begin : fixed_point_num
 	if(~rst_n)
 		fixed_point_num_data <= '{default:'0};
-	else
-		for (int i = 0; i < 8; i++)
-			fixed_point_num_data[i] <= $signed(in_data[i]<<<3);
+	else begin 
+		fixed_point_num_data[0] <= $signed({in_data[0],3'd0});
+      fixed_point_num_data[1] <= $signed({in_data[4],3'd0});
+      fixed_point_num_data[2] <= $signed({in_data[6],3'd0});
+      fixed_point_num_data[3] <= $signed({in_data[2],3'd0});
+      fixed_point_num_data[4] <= $signed({in_data[7],3'd0});
+      fixed_point_num_data[5] <= $signed({in_data[5],3'd0});
+      fixed_point_num_data[6] <= $signed({in_data[3],3'd0});
+      fixed_point_num_data[7] <= $signed({in_data[1],3'd0});
+   end
 end
 
 // stage 1

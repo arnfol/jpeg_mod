@@ -65,11 +65,11 @@ always_ff @(posedge clk, negedge rst_n) begin : stage_1
 		stage1_data <= '{default:'0};
 	else begin
 		for (int i = 0; i < 8; i++)
-			stage1_data[i] <= sign_data_in[i]<<3;
+			stage1_data[i] <= $signed({sign_data_in[i],3'd0});
 
 		for (int i = 0; i < 4; i++) begin
-			stage1_data[i] <= (sign_data_in[i] + sign_data_in[7-i])<<3;
-			stage1_data[4+i] <= (sign_data_in[3-i] - sign_data_in[4+i])<<3;
+			stage1_data[i]   <= $signed({(sign_data_in[i] + sign_data_in[7-i]),3'd0});
+			stage1_data[4+i] <= $signed({(sign_data_in[3-i] - sign_data_in[4+i]),3'd0});
 		end
 	end
 end
@@ -161,8 +161,16 @@ always_ff @(posedge clk, negedge rst_n) begin : proc_res
 	if(~rst_n)
 		out_data <= '{default:0};
 	else
-		for(int i=0; i<8; i++)
-			out_data[i] <= stage6_data[i][18:3];
+		for(int i=0; i<8; i++) begin
+			out_data[0] <= stage6_data[0][18:3];
+         out_data[1] <= stage6_data[7][18:3];
+         out_data[2] <= stage6_data[3][18:3];
+         out_data[3] <= stage6_data[6][18:3];
+         out_data[4] <= stage6_data[1][18:3];
+         out_data[5] <= stage6_data[5][18:3];
+         out_data[6] <= stage6_data[2][18:3];
+         out_data[7] <= stage6_data[4][18:3];
+      end
 end
 
 endmodule
