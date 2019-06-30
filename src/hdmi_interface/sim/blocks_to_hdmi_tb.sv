@@ -36,7 +36,7 @@ module blocks_to_hdmi_tb ();
 	always #5 clk = !clk;
 
 	initial begin
-		#100000 $display("%t : TIMEOUT : Test complete", $time);
+		#200000 $display("%t : TIMEOUT : Test complete", $time);
 		$stop(); // simulation timeout
 	end
 

@@ -236,7 +236,16 @@ module blocks_to_hdmi #(
 			LINE_DATA : begin 
 				rd_cntr_en = 1;
 
-				if(rd_cntr[$clog2(X_RES/N)-1:0] == X_RES/N-1) begin 
+				// what a shame, should have made 3-dimentional buffers
+				if(rd_cntr == 1*X_RES/N-1
+				|| rd_cntr == 2*X_RES/N-1
+				|| rd_cntr == 3*X_RES/N-1
+				|| rd_cntr == 4*X_RES/N-1
+				|| rd_cntr == 5*X_RES/N-1
+				|| rd_cntr == 6*X_RES/N-1
+				|| rd_cntr == 7*X_RES/N-1
+				|| rd_cntr == 8*X_RES/N-1
+				) begin 
 					next_line_num = line_num + 1;
 					next_state = LINE_SYNC;
 				end else begin 
@@ -246,9 +255,9 @@ module blocks_to_hdmi #(
 
 			LINE_SYNC : begin 
 				next_h_sync_cntr = h_sync_cntr + 1;
-				h_sync = (h_sync_cntr > H_FRONT_PORCH_CYC) && (h_sync_cntr < H_FRONT_PORCH_CYC+H_SYNC_CYC);
+				h_sync = (h_sync_cntr > H_FRONT_PORCH_CYC-1) && (h_sync_cntr < H_FRONT_PORCH_CYC+H_SYNC_CYC);
 
-				if(h_sync_cntr >= H_FRONT_PORCH_CYC+H_BACK_PORCH_CYC+H_SYNC_CYC) begin 
+				if(h_sync_cntr >= H_FRONT_PORCH_CYC+H_BACK_PORCH_CYC+H_SYNC_CYC-1) begin 
 					next_h_sync_cntr = '0;
 					if(line_num >= Y_RES) begin // last line in frame 
 						next_state = FRAME_SYNC;
@@ -263,8 +272,8 @@ module blocks_to_hdmi #(
 
 			FRAME_F_PORCH : begin 
 				next_pix_cntr = pix_cntr + 1;
-				h_sync =    (pix_cntr > X_RES/N+H_FRONT_PORCH_CYC) 
-				         && (pix_cntr < X_RES/N+H_FRONT_PORCH_CYC+H_SYNC_CYC);
+				h_sync =    (pix_cntr > X_RES/N+H_FRONT_PORCH_CYC-1) 
+				         && (pix_cntr < X_RES/N+H_FRONT_PORCH_CYC+H_SYNC_CYC-1);
 
 				if(pix_cntr == LINE_WIDTH-1) begin 
 					if(line_num >= V_FRONT_PORCH_CYC-1) begin
@@ -280,8 +289,8 @@ module blocks_to_hdmi #(
 			FRAME_SYNC : begin 
 				next_pix_cntr = pix_cntr + 1;
 				v_sync = 1;
-				h_sync =    (pix_cntr > X_RES/N+H_FRONT_PORCH_CYC) 
-				         && (pix_cntr < X_RES/N+H_FRONT_PORCH_CYC+H_SYNC_CYC);
+				h_sync =    (pix_cntr > X_RES/N+H_FRONT_PORCH_CYC-1) 
+				         && (pix_cntr < X_RES/N+H_FRONT_PORCH_CYC+H_SYNC_CYC-1);
 
 				if(pix_cntr == LINE_WIDTH-1) begin 
 					if(line_num >= V_SYNC_CYC-1) begin
@@ -296,8 +305,8 @@ module blocks_to_hdmi #(
 
 			FRAME_B_PORCH : begin 
 				next_pix_cntr = pix_cntr + 1;
-				h_sync =    (pix_cntr > X_RES/N+H_FRONT_PORCH_CYC) 
-				         && (pix_cntr < X_RES/N+H_FRONT_PORCH_CYC+H_SYNC_CYC);
+				h_sync =    (pix_cntr > X_RES/N+H_FRONT_PORCH_CYC-1) 
+				         && (pix_cntr < X_RES/N+H_FRONT_PORCH_CYC+H_SYNC_CYC-1);
 
 				if(pix_cntr == LINE_WIDTH-1) begin 
 					if(line_num >= V_BACK_PORCH_CYC-1) begin
@@ -333,5 +342,9 @@ module blocks_to_hdmi #(
 			hdmi_h_sync <= h_sync;
 		end
 	end
+
+	assign hdmi_data_y  = (!buf_select) ? buf2_o[8*N-1   : 0]     : buf1_o[8*N-1   : 0]    ;
+	assign hdmi_data_cr = (!buf_select) ? buf2_o[8*N*2-1 : 8*N]   : buf1_o[8*N*2-1 : 8*N]  ;
+	assign hdmi_data_cb = (!buf_select) ? buf2_o[8*N*3-1 : 8*N*2] : buf1_o[8*N*3-1 : 8*N*2];
 
 endmodule
