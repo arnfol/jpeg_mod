@@ -70,9 +70,11 @@ module blocks_to_hdmi #(
 	logic             buf2_wr_en;
 	logic [8*3*N-1:0] buf2_o    ;
 
-	logic signed [1:0][N-1:0][7:0] pipe_data_y     ;
-	logic signed [1:0][N-1:0][7:0] pipe_data_cr    ;
-	logic signed [1:0][N-1:0][7:0] pipe_data_cb    ;
+	logic signed [N-1:0][7:0] pipe_data_y   ;
+	logic signed [N-1:0][7:0] pipe_data_cr  ;
+	logic signed [N-1:0][7:0] pipe_data_cb  ;
+	logic                     pipe_blk_valid;
+	logic                     pipe_blk_sof  ;
 
 	logic [$clog2(BUF_DEPTH)-1:0] wr_cntr   ;
 	logic                         wr_cntr_en;
@@ -112,27 +114,31 @@ module blocks_to_hdmi #(
 	always_ff @(posedge clk) begin
 		buf1_o <= buf1[rd_cntr];
 		if(buf1_wr_en) begin
-			buf1[wr_cntr] <= {pipe_data_cb[1], pipe_data_cr[1], pipe_data_y[1]};
+			buf1[wr_cntr] <= {pipe_data_cb, pipe_data_cr, pipe_data_y};
 		end
 	end
 
 	always_ff @(posedge clk) begin
 		buf2_o <= buf2[rd_cntr];
 		if(buf2_wr_en) begin
-			buf2[wr_cntr] <= {pipe_data_cb[1], pipe_data_cr[1], pipe_data_y[1]};
+			buf2[wr_cntr] <= {pipe_data_cb, pipe_data_cr, pipe_data_y};
 		end
 	end
 
 	// additional pipeline for wr_cntr pipeline compensation
-	always_ff @(posedge clk or negedge rst_n) begin 
+	always_ff @(posedge clk or negedge rst_n) begin
 		if(~rst_n) begin
-			{pipe_data_cb} <= '0;
-			{pipe_data_cr} <= '0;
-			{pipe_data_y } <= '0;
+			pipe_data_cb   <= '0;
+			pipe_data_cr   <= '0;
+			pipe_data_y    <= '0;
+			pipe_blk_valid <= '0;
+			pipe_blk_sof   <= '0;
 		end else begin
-			{pipe_data_cb} <= {pipe_data_cb, blk_data_cb};
-			{pipe_data_cr} <= {pipe_data_cr, blk_data_cr};
-			{pipe_data_y } <= {pipe_data_y , blk_data_y };
+			pipe_data_cb   <= blk_data_cb;
+			pipe_data_cr   <= blk_data_cr;
+			pipe_data_y    <= blk_data_y;
+			pipe_blk_valid <= blk_valid;
+			pipe_blk_sof   <= blk_sof;
 		end
 	end
 
@@ -150,32 +156,32 @@ module blocks_to_hdmi #(
 
  	assign buf_empty = (rd_cntr == BUF_DEPTH-1);
 
-	always_ff @(posedge clk or negedge rst_n) begin 
-	 	if(~rst_n) begin
-	 		block <= '0;
-	 		block_line <= '0;
-	 		block_elem <= '0;
-	 	end else if(wr_cntr_en)begin
-	 		if(block_elem == BLOCK_SIZE/N-1) begin // end of block line
-	 			block_elem <= '0;
-		 		if(block_line == BLOCK_SIZE-1) begin // end of block
-		 			block_line <= '0;
-		 			block <= (block == X_RES/BLOCK_SIZE-1) ? 0 : block + 1'b1;
-	 			// if not end of block
-		 		end else block_line <= block_line + 1'b1;
-		 	// if not end of block line
-	 		end else block_elem <= block_elem + 1'b1;
-	 	end
+	always_ff @(posedge clk or negedge rst_n) begin
+		if(~rst_n) begin
+			block      <= '0;
+			block_line <= '0;
+			block_elem <= '0;
+		end else if(wr_cntr_en)begin
+			if(block_elem == BLOCK_SIZE/N-1) begin // end of block line
+				block_elem <= '0;
+				if(block_line == BLOCK_SIZE-1) begin // end of block
+					block_line <= '0;
+					block      <= (block == X_RES/BLOCK_SIZE-1) ? 0 : block + 1'b1;
+					// if not end of block
+				end else block_line <= block_line + 1'b1;
+				// if not end of block line
+			end else block_elem <= block_elem + 1'b1;
+		end
 	end
 
 	// additional pipeline for synthesis
-	always_ff @(posedge clk or negedge rst_n) begin 
+	always_ff @(posedge clk or negedge rst_n) begin
 		if(~rst_n) begin
-			wr_cntr <= '0;
+			wr_cntr  <= '0;
 			buf_full <= 0;
 		end else begin
-			wr_cntr <= block_elem + block_line*X_RES/N + block*BLOCK_SIZE/N;
-			buf_full <= (block_elem == BLOCK_SIZE/N-2) && (block_line == BLOCK_SIZE-1) && (block == X_RES/BLOCK_SIZE-1);
+			wr_cntr  <= block_elem + block_line*X_RES/N + block*BLOCK_SIZE/N;
+			buf_full <= (wr_cntr >= BUF_DEPTH-1);
 		end
 	end
 
@@ -191,9 +197,9 @@ module blocks_to_hdmi #(
 		end
 	end
 
-	assign wr_cntr_en = buf1_wr_en || buf2_wr_en;
-	assign buf1_wr_en = !buf_select && blk_valid && got_sof;
-	assign buf2_wr_en =  buf_select && blk_valid && got_sof;
+	assign wr_cntr_en = blk_valid;
+	assign buf1_wr_en = !buf_select && pipe_blk_valid && got_sof;
+	assign buf2_wr_en =  buf_select && pipe_blk_valid && got_sof;
 	
 	always_ff @(posedge clk or negedge rst_n) begin 
 		if(~rst_n) begin
@@ -205,129 +211,129 @@ module blocks_to_hdmi #(
 	end
 
 
-	always_ff @(posedge clk or negedge rst_n) begin 
+	always_ff @(posedge clk or negedge rst_n) begin
 		if(~rst_n) begin
-			state <= IDLE;
+			state       <= IDLE;
 			h_sync_cntr <= '0;
 			v_sync_cntr <= '0;
-			line_num <= '0;
-			pix_cntr <= '0;
+			line_num    <= '0;
+			pix_cntr    <= '0;
 		end else begin
-			state <= next_state;
+			state       <= next_state;
 			h_sync_cntr <= next_h_sync_cntr;
 			v_sync_cntr <= next_v_sync_cntr;
-			line_num <= next_line_num;
-			pix_cntr <= next_pix_cntr;
+			line_num    <= next_line_num;
+			pix_cntr    <= next_pix_cntr;
 		end
 	end
 
-	always_comb begin 
-		rd_cntr_en = 0;
-		h_sync = 0;
-		v_sync = 0;
+	always_comb begin
+		rd_cntr_en       = 0;
+		h_sync           = 0;
+		v_sync           = 0;
 		next_h_sync_cntr = h_sync_cntr;
-		next_line_num = line_num;
+		next_line_num    = line_num;
 
 		case (state)
-			IDLE : begin 
+			IDLE : begin
 				if(buf_full && got_sof) next_state = LINE_DATA;
 			end
 
-			LINE_DATA : begin 
+			LINE_DATA : begin
 				rd_cntr_en = 1;
 
 				// what a shame, should have made 3-dimentional buffers
 				if(rd_cntr == 1*X_RES/N-1
-				|| rd_cntr == 2*X_RES/N-1
-				|| rd_cntr == 3*X_RES/N-1
-				|| rd_cntr == 4*X_RES/N-1
-				|| rd_cntr == 5*X_RES/N-1
-				|| rd_cntr == 6*X_RES/N-1
-				|| rd_cntr == 7*X_RES/N-1
-				|| rd_cntr == 8*X_RES/N-1
-				) begin 
+					|| rd_cntr == 2*X_RES/N-1
+					|| rd_cntr == 3*X_RES/N-1
+					|| rd_cntr == 4*X_RES/N-1
+					|| rd_cntr == 5*X_RES/N-1
+					|| rd_cntr == 6*X_RES/N-1
+					|| rd_cntr == 7*X_RES/N-1
+					|| rd_cntr == 8*X_RES/N-1
+				) begin
 					next_line_num = line_num + 1;
-					next_state = LINE_SYNC;
-				end else begin 
+					next_state    = LINE_SYNC;
+				end else begin
 					next_state = LINE_DATA;
 				end
 			end
 
-			LINE_SYNC : begin 
+			LINE_SYNC : begin
 				next_h_sync_cntr = h_sync_cntr + 1;
-				h_sync = (h_sync_cntr > H_FRONT_PORCH_CYC-1) && (h_sync_cntr < H_FRONT_PORCH_CYC+H_SYNC_CYC);
+				h_sync           = (h_sync_cntr > H_FRONT_PORCH_CYC-1) && (h_sync_cntr < H_FRONT_PORCH_CYC+H_SYNC_CYC);
 
-				if(h_sync_cntr >= H_FRONT_PORCH_CYC+H_BACK_PORCH_CYC+H_SYNC_CYC-1) begin 
+				if(h_sync_cntr >= H_FRONT_PORCH_CYC+H_BACK_PORCH_CYC+H_SYNC_CYC-1) begin
 					next_h_sync_cntr = '0;
-					if(line_num >= Y_RES) begin // last line in frame 
-						next_state = FRAME_SYNC;
+					if(line_num >= Y_RES) begin // last line in frame
+						next_state    = FRAME_SYNC;
 						next_line_num = '0;
-					end else begin 
+					end else begin
 						next_state = LINE_DATA;
 					end
-				end else begin 
+				end else begin
 					next_state = LINE_SYNC;
 				end
 			end
 
-			FRAME_F_PORCH : begin 
+			FRAME_F_PORCH : begin
 				next_pix_cntr = pix_cntr + 1;
-				h_sync =    (pix_cntr > X_RES/N+H_FRONT_PORCH_CYC-1) 
-				         && (pix_cntr < X_RES/N+H_FRONT_PORCH_CYC+H_SYNC_CYC-1);
+				h_sync        = (pix_cntr > X_RES/N+H_FRONT_PORCH_CYC-1)
+					&& (pix_cntr < X_RES/N+H_FRONT_PORCH_CYC+H_SYNC_CYC-1);
 
-				if(pix_cntr == LINE_WIDTH-1) begin 
+				if(pix_cntr == LINE_WIDTH-1) begin
 					if(line_num >= V_FRONT_PORCH_CYC-1) begin
-						next_state = FRAME_SYNC;
+						next_state    = FRAME_SYNC;
 						next_line_num = '0;
-					end else begin 
-						next_state = FRAME_F_PORCH;
+					end else begin
+						next_state    = FRAME_F_PORCH;
 						next_line_num = line_num + 1;
 					end
 				end
 			end
 
-			FRAME_SYNC : begin 
+			FRAME_SYNC : begin
 				next_pix_cntr = pix_cntr + 1;
-				v_sync = 1;
-				h_sync =    (pix_cntr > X_RES/N+H_FRONT_PORCH_CYC-1) 
-				         && (pix_cntr < X_RES/N+H_FRONT_PORCH_CYC+H_SYNC_CYC-1);
+				v_sync        = 1;
+				h_sync        = (pix_cntr > X_RES/N+H_FRONT_PORCH_CYC-1)
+					&& (pix_cntr < X_RES/N+H_FRONT_PORCH_CYC+H_SYNC_CYC-1);
 
-				if(pix_cntr == LINE_WIDTH-1) begin 
+				if(pix_cntr == LINE_WIDTH-1) begin
 					if(line_num >= V_SYNC_CYC-1) begin
-						next_state = FRAME_B_PORCH;
+						next_state    = FRAME_B_PORCH;
 						next_line_num = '0;
-					end else begin 
-						next_state = FRAME_SYNC;
+					end else begin
+						next_state    = FRAME_SYNC;
 						next_line_num = line_num + 1;
 					end
 				end
 			end
 
-			FRAME_B_PORCH : begin 
+			FRAME_B_PORCH : begin
 				next_pix_cntr = pix_cntr + 1;
-				h_sync =    (pix_cntr > X_RES/N+H_FRONT_PORCH_CYC-1) 
-				         && (pix_cntr < X_RES/N+H_FRONT_PORCH_CYC+H_SYNC_CYC-1);
+				h_sync        = (pix_cntr > X_RES/N+H_FRONT_PORCH_CYC-1)
+					&& (pix_cntr < X_RES/N+H_FRONT_PORCH_CYC+H_SYNC_CYC-1);
 
-				if(pix_cntr == LINE_WIDTH-1) begin 
+				if(pix_cntr == LINE_WIDTH-1) begin
 					if(line_num >= V_BACK_PORCH_CYC-1) begin
 						if(got_sof) next_state = LINE_DATA;
-						else begin 
+						else begin
 							// TODO: raise error?
 							next_state = IDLE;
 						end
 						next_line_num = '0;
-					end else begin 
-						next_state = FRAME_B_PORCH;
+					end else begin
+						next_state    = FRAME_B_PORCH;
 						next_line_num = line_num + 1;
 					end
 				end
 			end
 
-			default : begin 
+			default : begin
 				next_state = IDLE;
 			end
 		endcase
-	
+
 	end
 
 	// pipelined for block memory compensation
