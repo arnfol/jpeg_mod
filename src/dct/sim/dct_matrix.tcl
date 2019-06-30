@@ -1,19 +1,52 @@
-transcript on
-vlib work
+# -------------------------------------------------------------------
+# config
+# -------------------------------------------------------------------
 
-vlog -sv +incdir+./ ../dct_ft_math.sv
-vlog -sv +incdir+./ ../dct_it_math.sv
-vlog -sv +incdir+./ ../dct_ft_wrapper.sv
-vlog -sv +incdir+./ ../dct_it_wrapper.sv
-vlog -sv +incdir+./ ../../matrix_buffer/matrix_buffer.sv
-vlog -sv +incdir+./ ../dct_ft_matrix.sv
-vlog -sv +incdir+./ ../dct_it_matrix.sv
-vlog -sv +incdir+./ ./dct_matrix_tb.sv
+set worklib "work"
+set top_lvl "dct_matrix_tb"
+set macro_file "dct_matrix_wave.do"
+set path_to_quartus C:/intelFPGA/18.0/quartus
 
-vsim -t 1ns -voptargs="+acc" dct_matrix_tb
+# -------------------------------------------------------------------
+# make libs
+# -------------------------------------------------------------------
+vlib $worklib
 
-do ./dct_matrix_wave.do
+# create quartus megafunctions lib
+vlib lpm_ver
+vmap lpm_ver lpm_ver
+vlog -work lpm_ver $path_to_quartus/eda/sim_lib/220model.v
 
+
+# -------------------------------------------------------------------
+# compile
+# -------------------------------------------------------------------
+vlog -sv +incdir+./ -work $worklib "../../matrix_buffer/matrix_buffer.sv"
+vlog -sv +incdir+./ -work $worklib "../../dct/dct_ft_math.sv"
+vlog -sv +incdir+./ -work $worklib "../../dct/dct_it_math.sv"
+vlog -sv +incdir+./ -work $worklib "../../dct/dct_ft_wrapper.sv"
+vlog -sv +incdir+./ -work $worklib "../../dct/dct_it_wrapper.sv"
+vlog -sv +incdir+./ -work $worklib "../../dct/dct_ft_matrix.sv"
+vlog -sv +incdir+./ -work $worklib "../../dct/dct_it_matrix.sv"
+vlog -sv +incdir+./ -work $worklib "../../flow_math/flow_divider.sv"
+vlog -sv +incdir+./ -work $worklib "../../flow_math/flow_mult.sv"
+vlog -sv +incdir+./ -work $worklib "dct_matrix_tb.sv"
+
+# -------------------------------------------------------------------
+# simulate
+# -------------------------------------------------------------------
+
+# some windows
+view structure
+view signals
+view wave
+
+vsim -L lpm_ver "$worklib.$top_lvl"
+
+# signals
+if {!($macro_file eq "")} { do $macro_file }
+
+# run
 configure wave -timelineunits ns
 run -all
 wave zoom full
