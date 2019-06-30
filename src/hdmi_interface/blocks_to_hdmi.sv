@@ -102,11 +102,9 @@ module blocks_to_hdmi #(
 	                  FRAME_SYNC} state, next_state;
 
 
-    // TODO: change to a vector
-	int next_h_sync_cntr, h_sync_cntr;
-	int next_v_sync_cntr, v_sync_cntr;
-	int next_line_num, line_num;
-	int next_pix_cntr, pix_cntr;
+	logic [$clog2(H_FRONT_PORCH_CYC+H_BACK_PORCH_CYC+H_SYNC_CYC)-1:0] next_h_sync_cntr, h_sync_cntr;
+	logic [$clog2(Y_RES)-1:0] next_line_num, line_num;
+	logic [$clog2(LINE_WIDTH)-1:0] next_pix_cntr, pix_cntr;
 
 	/*------------------------------------------------------------------------------
 	--  INPUT BUFFERS
@@ -215,13 +213,11 @@ module blocks_to_hdmi #(
 		if(~rst_n) begin
 			state       <= IDLE;
 			h_sync_cntr <= '0;
-			v_sync_cntr <= '0;
 			line_num    <= '0;
 			pix_cntr    <= '0;
 		end else begin
 			state       <= next_state;
 			h_sync_cntr <= next_h_sync_cntr;
-			v_sync_cntr <= next_v_sync_cntr;
 			line_num    <= next_line_num;
 			pix_cntr    <= next_pix_cntr;
 		end
@@ -279,7 +275,7 @@ module blocks_to_hdmi #(
 			FRAME_F_PORCH : begin
 				next_pix_cntr = pix_cntr + 1;
 				h_sync        = (pix_cntr > X_RES/N+H_FRONT_PORCH_CYC-1)
-					&& (pix_cntr < X_RES/N+H_FRONT_PORCH_CYC+H_SYNC_CYC-1);
+					         && (pix_cntr < X_RES/N+H_FRONT_PORCH_CYC+H_SYNC_CYC-1);
 
 				if(pix_cntr == LINE_WIDTH-1) begin
 					if(line_num >= V_FRONT_PORCH_CYC-1) begin
@@ -296,7 +292,7 @@ module blocks_to_hdmi #(
 				next_pix_cntr = pix_cntr + 1;
 				v_sync        = 1;
 				h_sync        = (pix_cntr > X_RES/N+H_FRONT_PORCH_CYC-1)
-					&& (pix_cntr < X_RES/N+H_FRONT_PORCH_CYC+H_SYNC_CYC-1);
+					         && (pix_cntr < X_RES/N+H_FRONT_PORCH_CYC+H_SYNC_CYC-1);
 
 				if(pix_cntr == LINE_WIDTH-1) begin
 					if(line_num >= V_SYNC_CYC-1) begin
@@ -312,7 +308,7 @@ module blocks_to_hdmi #(
 			FRAME_B_PORCH : begin
 				next_pix_cntr = pix_cntr + 1;
 				h_sync        = (pix_cntr > X_RES/N+H_FRONT_PORCH_CYC-1)
-					&& (pix_cntr < X_RES/N+H_FRONT_PORCH_CYC+H_SYNC_CYC-1);
+				             && (pix_cntr < X_RES/N+H_FRONT_PORCH_CYC+H_SYNC_CYC-1);
 
 				if(pix_cntr == LINE_WIDTH-1) begin
 					if(line_num >= V_BACK_PORCH_CYC-1) begin
