@@ -24,7 +24,7 @@
 	output logic                       out_sof
 );
 
-localparam PIPE = 8;
+localparam PIPE = 17;
 
 `ifdef DCT_FT
 	logic        [W_I-1:0] data_in [7:0];
