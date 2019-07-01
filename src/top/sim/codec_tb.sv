@@ -10,7 +10,7 @@ localparam H_FRONT_PORCH_CYC = 40;
 localparam H_BACK_PORCH_CYC  = 46;
 localparam H_SYNC_CYC        = 20;
 localparam V_FRONT_PORCH_CYC = 28;
-localparam V_BACK_PORCH_CYC  = 24; // Original 234, but I don't want to wait so long
+localparam V_BACK_PORCH_CYC  = 234; // Original 234
 localparam V_SYNC_CYC        = 2 ;
 
 parameter FNUM = 3;
@@ -61,6 +61,12 @@ always #5 clk = !clk;
 logic [7:0] result_y [1:0];
 logic [7:0] result_cr[1:0];
 logic [7:0] result_cb[1:0];
+
+
+initial begin
+	#40ms $display("%t : TIMEOUT : Test timeout", $time);
+	$stop(); // simulation timeout
+end
 
 initial forever @(posedge clk iff rst_n) begin
 	for (int i = 0; i < 2; i++) begin
@@ -118,7 +124,7 @@ initial begin
 
 	repeat(FNUM) begin
 		send_frame();
-		wait_for($urandom_range(0,50));
+		// wait_for($urandom_range(0,50));
 	end
 	// repeat(18) send_line();
 

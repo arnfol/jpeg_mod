@@ -50,6 +50,6 @@ vsim -L lpm_ver "$worklib.$top_lvl"
 if {!($macro_file eq "")} { do $macro_file }
 
 # run
-configure wave -timelineunits ns
+configure wave -timelineunits ms
 run -all
 wave zoom full
