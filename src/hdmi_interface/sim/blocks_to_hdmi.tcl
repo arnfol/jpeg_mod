@@ -33,6 +33,6 @@ vsim "$worklib.$top_lvl"
 if {!($macro_file eq "")} { do $macro_file }
 
 # run
-configure wave -timelineunits ns
+configure wave -timelineunits us
 run -all
 wave zoom full

@@ -9,7 +9,7 @@ module blocks_to_hdmi_tb ();
 	localparam H_BACK_PORCH_CYC = 46;
 	localparam H_SYNC_CYC = 20;
 	localparam V_FRONT_PORCH_CYC = 28;
-	localparam V_BACK_PORCH_CYC = 24; // Original 234, but I don't want to wait so long
+	localparam V_BACK_PORCH_CYC = 234; // Original 234, but I don't want to wait so long
 	localparam V_SYNC_CYC = 2;
 
 	bit clk;
@@ -36,7 +36,7 @@ module blocks_to_hdmi_tb ();
 	always #5 clk = !clk;
 
 	initial begin
-		#200000 $display("%t : TIMEOUT : Test complete", $time);
+		#30ms $display("%t : TIMEOUT : Test complete", $time);
 		$stop(); // simulation timeout
 	end
 
@@ -46,6 +46,7 @@ module blocks_to_hdmi_tb ();
 		repeat(2) @(posedge clk);
 		rst_n = 1;
 
+		send_frame();
 		send_frame();
 		// repeat(18) send_line();
 
@@ -79,9 +80,8 @@ module blocks_to_hdmi_tb ();
 	endtask : send_block
 
 	task wait_for(int cycles);;
-
+		$display("%t : Wait for %d", $time, cycles);
 		repeat(cycles) @(posedge clk);
-
 	endtask : wait_for
 
 	task send_8_lines(bit sof=0);
@@ -92,7 +92,7 @@ module blocks_to_hdmi_tb ();
 
 	task send_frame();
 		send_8_lines(1);
-		repeat((X_RES/8)*(Y_RES/8-1)) send_block();
+		repeat(Y_RES/8-1) send_8_lines();
 		wait_for((V_FRONT_PORCH_CYC+V_BACK_PORCH_CYC+V_SYNC_CYC)*(X_RES/N+H_FRONT_PORCH_CYC+H_BACK_PORCH_CYC+H_SYNC_CYC));
 	endtask : send_frame
 	

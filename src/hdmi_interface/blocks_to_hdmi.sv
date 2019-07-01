@@ -264,7 +264,7 @@ module blocks_to_hdmi #(
 				if(h_sync_cntr >= H_FRONT_PORCH_CYC+H_BACK_PORCH_CYC+H_SYNC_CYC-1) begin
 					next_h_sync_cntr = '0;
 					if(line_num >= Y_RES) begin // last line in frame
-						next_state    = FRAME_SYNC;
+						next_state    = FRAME_F_PORCH;
 						next_line_num = '0;
 					end else begin
 						next_state = LINE_DATA;
@@ -279,7 +279,8 @@ module blocks_to_hdmi #(
 				h_sync        = (pix_cntr > X_RES/N+H_FRONT_PORCH_CYC-1)
 					         && (pix_cntr < X_RES/N+H_FRONT_PORCH_CYC+H_SYNC_CYC-1);
 
-				if(pix_cntr == LINE_WIDTH-1) begin
+				if(pix_cntr >= LINE_WIDTH-1) begin
+					next_pix_cntr = '0;
 					if(line_num >= V_FRONT_PORCH_CYC-1) begin
 						next_state    = FRAME_SYNC;
 						next_line_num = '0;
@@ -296,7 +297,8 @@ module blocks_to_hdmi #(
 				h_sync        = (pix_cntr > X_RES/N+H_FRONT_PORCH_CYC-1)
 					         && (pix_cntr < X_RES/N+H_FRONT_PORCH_CYC+H_SYNC_CYC-1);
 
-				if(pix_cntr == LINE_WIDTH-1) begin
+				if(pix_cntr >= LINE_WIDTH-1) begin
+					next_pix_cntr = '0;
 					if(line_num >= V_SYNC_CYC-1) begin
 						next_state    = FRAME_B_PORCH;
 						next_line_num = '0;
@@ -312,7 +314,8 @@ module blocks_to_hdmi #(
 				h_sync        = (pix_cntr > X_RES/N+H_FRONT_PORCH_CYC-1)
 				             && (pix_cntr < X_RES/N+H_FRONT_PORCH_CYC+H_SYNC_CYC-1);
 
-				if(pix_cntr == LINE_WIDTH-1) begin
+				if(pix_cntr >= LINE_WIDTH-1) begin
+					next_pix_cntr = '0;
 					if(line_num >= V_BACK_PORCH_CYC-1) begin
 						if(got_sof) next_state = LINE_DATA;
 						else begin
