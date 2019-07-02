@@ -276,6 +276,7 @@ module blocks_to_hdmi #(
 
 			FRAME_F_PORCH : begin
 				next_pix_cntr = pix_cntr + 1;
+				v_sync        = (pix_cntr > X_RES/N+H_FRONT_PORCH_CYC-1) && (line_num >= V_FRONT_PORCH_CYC-1);
 				h_sync        = (pix_cntr > X_RES/N+H_FRONT_PORCH_CYC-1)
 					         && (pix_cntr < X_RES/N+H_FRONT_PORCH_CYC+H_SYNC_CYC-1);
 
@@ -294,6 +295,8 @@ module blocks_to_hdmi #(
 			FRAME_SYNC : begin
 				next_pix_cntr = pix_cntr + 1;
 				v_sync        = 1;
+				v_sync        = (pix_cntr < X_RES/N+H_FRONT_PORCH_CYC) 
+				             && (line_num == V_SYNC_CYC-1) || (line_num < V_SYNC_CYC-1);
 				h_sync        = (pix_cntr > X_RES/N+H_FRONT_PORCH_CYC-1)
 					         && (pix_cntr < X_RES/N+H_FRONT_PORCH_CYC+H_SYNC_CYC-1);
 
