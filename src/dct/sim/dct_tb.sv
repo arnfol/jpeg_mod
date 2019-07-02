@@ -132,6 +132,7 @@ endtask : wait_for
 dct_ft_wrapper #(.W_I(8)) i_dct_ft (
    .clk      (clk        ), // TODO: Check connection ! Signal/port not matching : Expecting logic  -- Found bit
    .rst_n    (rst_n      ), // TODO: Check connection ! Signal/port not matching : Expecting logic  -- Found bit
+   .en(1),
    .in_valid (in_valid   ),
    .in_data  (in_data    ),
    .in_eob   (in_eob     ),
@@ -148,6 +149,7 @@ dct_ft_wrapper #(.W_I(8)) i_dct_ft (
 dct_it_wrapper #(.W_O(8)) i_dct_it (
    .clk      (clk        ), // TODO: Check connection ! Signal/port not matching : Expecting logic  -- Found bit
    .rst_n    (rst_n      ), // TODO: Check connection ! Signal/port not matching : Expecting logic  -- Found bit
+   .en(1),
    .in_valid (out_valid_t),
    .in_data  (out_data_t ),
    .in_eob   (out_eob_t  ),
