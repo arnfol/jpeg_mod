@@ -54,12 +54,12 @@ module blocks_to_hdmi #(
 	localparam BLOCK_SIZE = 8;
 	localparam BUF_DEPTH = X_RES*BLOCK_SIZE/N;
 
-	localparam H_FRONT_PORCH_CYC = 40;
-	localparam H_BACK_PORCH_CYC = 46;
-	localparam H_SYNC_CYC = 20;
-	localparam V_FRONT_PORCH_CYC = 28;
-	localparam V_BACK_PORCH_CYC = 234;
-	localparam V_SYNC_CYC = 2;
+	localparam H_FRONT_PORCH_CYC = 88;	//40
+	localparam H_BACK_PORCH_CYC = 148;	//46
+	localparam H_SYNC_CYC = 44;		//20
+	localparam V_FRONT_PORCH_CYC = 4;	//28
+	localparam V_BACK_PORCH_CYC = 36;	//234
+	localparam V_SYNC_CYC = 5;		//2
 
 	localparam LINE_WIDTH = X_RES/N + H_FRONT_PORCH_CYC + H_BACK_PORCH_CYC + H_SYNC_CYC;
 
