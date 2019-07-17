@@ -216,10 +216,10 @@ add wave -noupdate -group {IDCT CB} -radix decimal /codec_tb/i_codec/i_dct_it_ma
 TreeUpdate [SetDefaultTree]
 WaveRestoreCursors {{Cursor 1} {490333260 ps} 0} {{Cursor 2} {402885000 ps} 0}
 quietly wave cursor active 1
-configure wave -namecolwidth 322
+configure wave -namecolwidth 163
 configure wave -valuecolwidth 100
 configure wave -justifyvalue left
-configure wave -signalnamewidth 0
+configure wave -signalnamewidth 1
 configure wave -snapdistance 10
 configure wave -datasetprefix 0
 configure wave -rowmargin 4
@@ -228,6 +228,6 @@ configure wave -gridoffset 0
 configure wave -gridperiod 1
 configure wave -griddelta 40
 configure wave -timeline 0
-configure wave -timelineunits ns
+configure wave -timelineunits ms
 update
-WaveRestoreZoom {490312250 ps} {490431397 ps}
+WaveRestoreZoom {490312250 ps} {490459339 ps}
