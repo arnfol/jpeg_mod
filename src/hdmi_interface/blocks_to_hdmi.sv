@@ -61,7 +61,7 @@ module blocks_to_hdmi #(
 	localparam V_BACK_PORCH_CYC = 234;
 	localparam V_SYNC_CYC = 2;
 
-	localparam LINE_WIDTH = X_RES/N + H_FRONT_PORCH_CYC + H_BACK_PORCH_CYC + H_SYNC_CYC;
+	localparam LINE_WIDTH = (X_RES + H_FRONT_PORCH_CYC + H_BACK_PORCH_CYC + H_SYNC_CYC)/N;
 
 	logic [8*3*N-1:0] buf1 [BUF_DEPTH];
 	logic             buf1_wr_en;
@@ -102,7 +102,7 @@ module blocks_to_hdmi #(
 	                  FRAME_SYNC} state, next_state;
 
 
-	logic [$clog2(H_FRONT_PORCH_CYC+H_BACK_PORCH_CYC+H_SYNC_CYC)-1:0] next_h_sync_cntr, h_sync_cntr;
+	logic [$clog2((H_FRONT_PORCH_CYC+H_BACK_PORCH_CYC+H_SYNC_CYC)/N)-1:0] next_h_sync_cntr, h_sync_cntr;
 	logic [$clog2(Y_RES)-1:0] next_line_num, line_num;
 	logic [$clog2(LINE_WIDTH)-1:0] next_pix_cntr, pix_cntr;
 
@@ -259,9 +259,9 @@ module blocks_to_hdmi #(
 
 			LINE_SYNC : begin
 				next_h_sync_cntr = h_sync_cntr + 1;
-				h_sync           = (h_sync_cntr > H_FRONT_PORCH_CYC-1) && (h_sync_cntr < H_FRONT_PORCH_CYC+H_SYNC_CYC);
+				h_sync           = (h_sync_cntr > H_FRONT_PORCH_CYC/N-1) && (h_sync_cntr < (H_FRONT_PORCH_CYC+H_SYNC_CYC)/N);
 
-				if(h_sync_cntr >= H_FRONT_PORCH_CYC+H_BACK_PORCH_CYC+H_SYNC_CYC-1) begin
+				if(h_sync_cntr >= (H_FRONT_PORCH_CYC+H_BACK_PORCH_CYC+H_SYNC_CYC)/N-1) begin
 					next_h_sync_cntr = '0;
 					if(line_num >= Y_RES) begin // last line in frame
 						next_state    = FRAME_F_PORCH;
@@ -276,9 +276,9 @@ module blocks_to_hdmi #(
 
 			FRAME_F_PORCH : begin
 				next_pix_cntr = pix_cntr + 1;
-				v_sync        = (pix_cntr > X_RES/N+H_FRONT_PORCH_CYC-1) && (line_num >= V_FRONT_PORCH_CYC-1);
-				h_sync        = (pix_cntr > X_RES/N+H_FRONT_PORCH_CYC-1)
-					         && (pix_cntr < X_RES/N+H_FRONT_PORCH_CYC+H_SYNC_CYC-1);
+				v_sync        = (pix_cntr > (X_RES+H_FRONT_PORCH_CYC)/N-1) && (line_num >= V_FRONT_PORCH_CYC-1);
+				h_sync        = (pix_cntr > (X_RES+H_FRONT_PORCH_CYC)/N-1)
+					         && (pix_cntr < (X_RES+H_FRONT_PORCH_CYC+H_SYNC_CYC)/N);
 
 				if(pix_cntr >= LINE_WIDTH-1) begin
 					next_pix_cntr = '0;
@@ -295,10 +295,10 @@ module blocks_to_hdmi #(
 			FRAME_SYNC : begin
 				next_pix_cntr = pix_cntr + 1;
 				v_sync        = 1;
-				v_sync        = (pix_cntr < X_RES/N+H_FRONT_PORCH_CYC) 
+				v_sync        = (pix_cntr < (X_RES+H_FRONT_PORCH_CYC)/N) 
 				             && (line_num == V_SYNC_CYC-1) || (line_num < V_SYNC_CYC-1);
-				h_sync        = (pix_cntr > X_RES/N+H_FRONT_PORCH_CYC-1)
-					         && (pix_cntr < X_RES/N+H_FRONT_PORCH_CYC+H_SYNC_CYC-1);
+				h_sync        = (pix_cntr > (X_RES+H_FRONT_PORCH_CYC)/N-1)
+					         && (pix_cntr < (X_RES+H_FRONT_PORCH_CYC+H_SYNC_CYC)/N);
 
 				if(pix_cntr >= LINE_WIDTH-1) begin
 					next_pix_cntr = '0;
@@ -314,8 +314,8 @@ module blocks_to_hdmi #(
 
 			FRAME_B_PORCH : begin
 				next_pix_cntr = pix_cntr + 1;
-				h_sync        = (pix_cntr > X_RES/N+H_FRONT_PORCH_CYC-1)
-				             && (pix_cntr < X_RES/N+H_FRONT_PORCH_CYC+H_SYNC_CYC-1);
+				h_sync        = (pix_cntr > (X_RES+H_FRONT_PORCH_CYC)/N-1)
+				             && (pix_cntr < (X_RES+H_FRONT_PORCH_CYC+H_SYNC_CYC)/N);
 
 				if(pix_cntr >= LINE_WIDTH-1) begin
 					next_pix_cntr = '0;

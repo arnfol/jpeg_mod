@@ -1,4 +1,4 @@
-`timescale 1ns/1ns
+1`timescale 1ns/1ns
 module blocks_to_hdmi_tb ();
 
 	parameter N = 2;
@@ -93,7 +93,7 @@ module blocks_to_hdmi_tb ();
 	task send_frame();
 		send_8_lines(1);
 		repeat(Y_RES/8-1) send_8_lines();
-		wait_for((V_FRONT_PORCH_CYC+V_BACK_PORCH_CYC+V_SYNC_CYC)*(X_RES/N+H_FRONT_PORCH_CYC+H_BACK_PORCH_CYC+H_SYNC_CYC));
+		wait_for((V_FRONT_PORCH_CYC+V_BACK_PORCH_CYC+V_SYNC_CYC)*((X_RES+H_FRONT_PORCH_CYC+H_BACK_PORCH_CYC+H_SYNC_CYC)/N));
 	endtask : send_frame
 	
 
