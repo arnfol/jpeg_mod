@@ -52,7 +52,7 @@ module hdmi_to_blocks #(
 );
 
 	localparam BLOCK_SIZE = 8;
-	localparam BUF_DEPTH = 2160*BLOCK_SIZE/N;
+	localparam BUF_DEPTH = X_RES*BLOCK_SIZE/N;
 
 	logic [8*3*N-1:0] buf1 [BUF_DEPTH];
 	logic             buf1_wr_en;
@@ -74,6 +74,7 @@ module hdmi_to_blocks #(
 	logic buf_full  ;
 	logic buf_select;
 
+	logic hdmi_v_sync_del;
 	logic next_is_sof;
 	logic first_frame;
 
@@ -152,8 +153,10 @@ module hdmi_to_blocks #(
 		if(~rst_n) begin
 			next_is_sof <= 0;
 			first_frame <= 0;
+			hdmi_v_sync_del <= 0;
 		end else begin
-			if(hdmi_v_sync) begin
+			hdmi_v_sync_del <= hdmi_v_sync;
+			if(!hdmi_v_sync && hdmi_v_sync_del) begin // can cause error in sof generation if V_FRONT_PORCH_CYC + V_SYNC_CYC < 8
 				next_is_sof <= 1;
 				first_frame <= 1;
 			end else if(blk_sof) begin
