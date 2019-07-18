@@ -31,6 +31,7 @@
 module dct_it_math #(W_O = 16) (
 	input                              clk     ,
 	input                              rst_n   ,
+	input                              en      ,
 	//
 	input        signed [7:0][   15:0] in_data ,
 	output logic signed [7:0][W_O-1:0] out_data
@@ -52,7 +53,7 @@ logic signed [18:0] fixed_point_num_data [7:0];
 always_ff @(posedge clk, negedge rst_n) begin : fixed_point_num
 	if(~rst_n)
 		fixed_point_num_data <= '{default:'0};
-	else begin 
+	else if(en) begin 
 		fixed_point_num_data[0] <= $signed({in_data[0],3'd0});
 		fixed_point_num_data[1] <= $signed({in_data[4],3'd0});
 		fixed_point_num_data[2] <= $signed({in_data[6],3'd0});
@@ -70,7 +71,7 @@ logic signed [18:0] stage1_data [11:0];
 always_ff @(posedge clk, negedge rst_n) begin : stage_1
 	if(~rst_n)
 		stage1_data <= '{default:'0};
-	else begin
+	else if(en) begin
 		for (int i = 0; i < 8; i++)
 			stage1_data[i] <= fixed_point_num_data[i];
 
@@ -87,7 +88,7 @@ logic signed [18:0] stage2_data [8:0];
 always_ff @(posedge clk, negedge rst_n) begin : stage_2
 	if(~rst_n)
 		stage2_data <= '{default:'0};
-	else begin
+	else if(en) begin
 		for (int i = 0; i < 8; i++)
 			stage2_data[i] <= stage1_data[i];
 
@@ -104,7 +105,7 @@ logic signed [18:0] stage3_data [7:0];
 always_ff @(posedge clk, negedge rst_n) begin : stage_3
 	if(~rst_n)
 		stage3_data <= '{default:'0};
-	else begin
+	else if(en) begin
 		for (int i = 0; i < 8; i++)
 			stage3_data[i] <= stage2_data[i];
 
@@ -118,7 +119,7 @@ logic signed [18:0] stage4_data [13:0];
 always_ff @(posedge clk, negedge rst_n) begin : stage_4
 	if(~rst_n)
 		stage4_data <= '{default:'0};
-	else begin
+	else if(en) begin
 		for (int i = 0; i < 8; i++)
 			stage4_data[i] <= stage3_data[i];
 
@@ -139,7 +140,7 @@ logic signed [18:0] stage5_data [10:0];
 always_ff @(posedge clk, negedge rst_n) begin : stage_5
 	if(~rst_n)
 		stage5_data <= '{default:'0};
-	else begin
+	else if(en) begin
 		for (int i = 0; i < 8; i++)
 			stage5_data[i] <= stage4_data[i];
 
@@ -157,7 +158,7 @@ logic signed [18:0] stage6_data [8:0];
 always_ff @(posedge clk, negedge rst_n) begin : stage_6
 	if(~rst_n)
 		stage6_data <= '{default:'0};
-	else begin
+	else if(en) begin
 		for (int i = 0; i < 8; i++)
 			stage6_data[i] <= stage5_data[i];
 
@@ -173,7 +174,7 @@ logic signed [18:0] stage7_data [7:0];
 always_ff @(posedge clk, negedge rst_n) begin : stage_7
 	if(~rst_n)
 		stage7_data <= '{default:'0};
-	else begin
+	else if(en) begin
 		for (int i = 0; i < 8; i++)
 			stage7_data[i] <= stage6_data[i];
 
@@ -187,7 +188,7 @@ logic signed [18:0] stage8_data [7:0];
 always_ff @(posedge clk, negedge rst_n) begin : stage_8
 	if(~rst_n)
 		stage8_data <= '{default:'0};
-	else begin
+	else if(en) begin
 		for (int i = 0; i < 8; i++)
 			stage8_data[i] <= stage7_data[i];
 
@@ -208,7 +209,7 @@ logic signed [18:0] stage9_data [9:0];
 always_ff @(posedge clk, negedge rst_n) begin : stage_9
 	if(~rst_n)
 		stage9_data <= '{default:'0};
-	else begin
+	else if(en) begin
 		for (int i = 0; i < 8; i++)
 			stage9_data[i] <= stage8_data[i];
 
@@ -223,7 +224,7 @@ logic signed [18:0] stage10_data [8:0];
 always_ff @(posedge clk, negedge rst_n) begin : stage_10
 	if(~rst_n)
 		stage10_data <= '{default:'0};
-	else begin
+	else if(en) begin
 		for (int i = 0; i < 8; i++)
 			stage10_data[i] <= stage9_data[i];
 
@@ -237,7 +238,7 @@ logic signed [18:0] stage11_data [7:0];
 always_ff @(posedge clk, negedge rst_n) begin : stage_11
 	if(~rst_n)
 		stage11_data <= '{default:'0};
-	else begin
+	else if(en) begin
 		for (int i = 0; i < 8; i++)
 			stage11_data[i] <= stage10_data[i];
 
@@ -251,7 +252,7 @@ logic signed [18:0] stage12_data [9:0];
 always_ff @(posedge clk, negedge rst_n) begin : stage_12
 	if(~rst_n)
 		stage12_data <= '{default:'0};
-	else begin
+	else if(en) begin
 		for (int i = 0; i < 8; i++)
 			stage12_data[i] <= stage11_data[i];
 
@@ -266,7 +267,7 @@ logic signed [18:0] stage13_data [8:0];
 always_ff @(posedge clk, negedge rst_n) begin : stage_13
 	if(~rst_n)
 		stage13_data <= '{default:'0};
-	else begin
+	else if(en) begin
 		for (int i = 0; i < 8; i++)
 			stage13_data[i] <= stage12_data[i];
 
@@ -280,7 +281,7 @@ logic signed [18:0] stage14_data [7:0];
 always_ff @(posedge clk, negedge rst_n) begin : stage_14
 	if(~rst_n)
 		stage14_data <= '{default:'0};
-	else begin
+	else if(en) begin
 		for (int i = 0; i < 8; i++)
 			stage14_data[i] <= stage13_data[i];
 
@@ -294,7 +295,7 @@ logic signed [18:0] stage15_data [7:0];
 always_ff @(posedge clk, negedge rst_n) begin : stage_15
 	if(~rst_n)
 		stage15_data <= '{default:'0};
-	else begin
+	else if(en) begin
 		for (int i = 0; i < 8; i++)
 			stage15_data[i] <= stage14_data[i];
 
@@ -309,7 +310,7 @@ end
 always_ff @(posedge clk, negedge rst_n) begin : proc_res
 	if(~rst_n)
 		out_data <= '{default:'0};
-	else
+	else if(en)
 		for (int i = 0; i < 8; i++)
 			out_data[i] <= stage15_data[i]>>>5;
 end
