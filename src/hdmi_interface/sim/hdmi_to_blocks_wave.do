@@ -2,6 +2,7 @@ onerror {resume}
 quietly WaveActivateNextPane {} 0
 add wave -noupdate /hdmi_to_blocks_tb/i_hdmi_to_blocks/clk
 add wave -noupdate /hdmi_to_blocks_tb/i_hdmi_to_blocks/rst_n
+add wave -noupdate /hdmi_to_blocks_tb/i_hdmi_to_blocks/en
 add wave -noupdate -expand -group HDMI /hdmi_to_blocks_tb/i_hdmi_to_blocks/hdmi_data_cb
 add wave -noupdate -expand -group HDMI /hdmi_to_blocks_tb/i_hdmi_to_blocks/hdmi_data_cr
 add wave -noupdate -expand -group HDMI /hdmi_to_blocks_tb/i_hdmi_to_blocks/hdmi_data_y
@@ -30,7 +31,7 @@ add wave -noupdate -group rd_cntr /hdmi_to_blocks_tb/i_hdmi_to_blocks/rd_cntr_en
 add wave -noupdate -group wr_cntr -radix unsigned /hdmi_to_blocks_tb/i_hdmi_to_blocks/wr_cntr
 add wave -noupdate -group wr_cntr /hdmi_to_blocks_tb/i_hdmi_to_blocks/wr_cntr_en
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {108706 ns} 0}
+WaveRestoreCursors {{Cursor 1} {12749775 ns} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 150
 configure wave -valuecolwidth 100
@@ -46,4 +47,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {0 ns} {1050 us}
+WaveRestoreZoom {0 ns} {31232140 ns}

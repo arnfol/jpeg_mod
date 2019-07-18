@@ -137,6 +137,7 @@ always_comb
 hdmi_to_blocks #(.N(N), .X_RES(X_RES), .Y_RES(Y_RES)) i_hdmi_to_blocks (
 	.clk            (clk              ),
 	.rst_n          (rst_n            ),
+	.en             (en               ),
 	.hdmi_v_sync    (i_hdmi_v_sync    ),
 	.hdmi_h_sync    (i_hdmi_h_sync    ),
 	.hdmi_data_valid(i_hdmi_data_valid),
@@ -354,6 +355,7 @@ dct_it_matrix i_dct_it_matrix_cb (
 blocks_to_hdmi #(.N(N), .X_RES(X_RES), .Y_RES(Y_RES)) i_blocks_to_hdmi (
 	.clk            (clk                                                 ),
 	.rst_n          (rst_n                                               ),
+	.en             (en                                                  ),
 	.hdmi_v_sync    (o_hdmi_v_sync                                       ),
 	.hdmi_h_sync    (o_hdmi_h_sync                                       ),
 	.hdmi_data_valid(o_hdmi_data_valid                                   ),

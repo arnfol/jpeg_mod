@@ -34,6 +34,7 @@ module blocks_to_hdmi #(
 ) (
 	input                            clk            ,
 	input                            rst_n          ,
+	input                            en             ,
 	// hdmi interface
 	output logic                     hdmi_v_sync    ,
 	output logic                     hdmi_h_sync    ,
@@ -203,7 +204,7 @@ module blocks_to_hdmi #(
 		if(~rst_n) begin
 			got_sof <= 0;
 		end else begin
-			if(blk_valid && blk_sof) got_sof <= 1;
+			if(blk_valid && blk_sof) got_sof <= en;
 			else if(next_state == FRAME_F_PORCH) got_sof <= 0;
 		end
 	end

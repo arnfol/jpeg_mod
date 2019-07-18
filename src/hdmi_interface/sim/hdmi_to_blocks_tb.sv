@@ -36,23 +36,30 @@ module hdmi_to_blocks_tb ();
 	------------------------------------------------------------------------------*/
 	always #5 clk = !clk;
 
-	initial begin
-		#1000000 $display("%t : TIMEOUT : Test complete", $time);
-		$stop(); // simulation timeout
-	end
+	// initial begin
+	// 	#1000000 $display("%t : TIMEOUT : Test complete", $time);
+	// 	$stop(); // simulation timeout
+	// end
 
 	int wait_cycles;
 	initial begin 	
-		en = 1;
 		rst_n = 0;
 		repeat(2) @(posedge clk);
 		rst_n = 1;
 
 		send_frame();
+		send_frame();
+		send_frame();
 		// repeat(18) send_line();
 
 		$display("%t : Sending done", $time);
 		$stop(); 
+	end
+
+	initial begin 
+		en = 1;
+		@(negedge hdmi_v_sync) #10 en <= 0;
+		@(negedge hdmi_v_sync) #10 en <= 1;
 	end
 
 	/*------------------------------------------------------------------------------
@@ -113,6 +120,7 @@ module hdmi_to_blocks_tb ();
 	hdmi_to_blocks #(.N(N), .X_RES(X_RES), .Y_RES(Y_RES)) i_hdmi_to_blocks (
 		.clk            (clk            ),
 		.rst_n          (rst_n          ),
+		.en             (en             ),
 		.hdmi_v_sync    (hdmi_v_sync    ),
 		.hdmi_h_sync    (hdmi_h_sync    ),
 		.hdmi_data_valid(hdmi_data_valid),

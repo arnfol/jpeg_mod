@@ -34,6 +34,7 @@ module hdmi_to_blocks #(
 ) (
 	input                            clk            ,
 	input                            rst_n          ,
+	input                            en             ,
 	// hdmi interface
 	input                            hdmi_v_sync    ,
 	input                            hdmi_h_sync    ,
@@ -158,7 +159,7 @@ module hdmi_to_blocks #(
 			hdmi_v_sync_del <= hdmi_v_sync;
 			if(!hdmi_v_sync && hdmi_v_sync_del) begin // can cause error in sof generation if V_FRONT_PORCH_CYC + V_SYNC_CYC < 8
 				next_is_sof <= 1;
-				first_frame <= 1;
+				first_frame <= en;
 			end else if(blk_sof) begin
 				next_is_sof <= 0;
 			end

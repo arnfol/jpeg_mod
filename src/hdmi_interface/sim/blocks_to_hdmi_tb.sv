@@ -1,4 +1,4 @@
-1`timescale 1ns/1ns
+`timescale 1ns/1ns
 module blocks_to_hdmi_tb ();
 
 	parameter N = 2;
@@ -101,22 +101,23 @@ module blocks_to_hdmi_tb ();
 	--  DUT
 	------------------------------------------------------------------------------*/
 	blocks_to_hdmi #(.N(N), .X_RES(X_RES), .Y_RES(Y_RES)) i_blocks_to_hdmi (
-	.clk            (clk            ),
-	.rst_n          (rst_n          ),
-	.hdmi_v_sync    (hdmi_v_sync    ),
-	.hdmi_h_sync    (hdmi_h_sync    ),
-	.hdmi_data_valid(hdmi_data_valid),
-	.hdmi_data_y    (hdmi_data_y    ),
-	.hdmi_data_cr   (hdmi_data_cr   ),
-	.hdmi_data_cb   (hdmi_data_cb   ),
-	.blk_valid      (blk_valid      ),
-	.blk_data_y     (blk_data_y     ),
-	.blk_data_cr    (blk_data_cr    ),
-	.blk_data_cb    (blk_data_cb    ),
-	.blk_eob        (blk_eob        ),
-	.blk_sob        (blk_sob        ),
-	.blk_sof        (blk_sof        ) 
-);
+		.clk            (clk            ),
+		.rst_n          (rst_n          ),
+		.en             (1'b1           ),
+		.hdmi_v_sync    (hdmi_v_sync    ),
+		.hdmi_h_sync    (hdmi_h_sync    ),
+		.hdmi_data_valid(hdmi_data_valid),
+		.hdmi_data_y    (hdmi_data_y    ),
+		.hdmi_data_cr   (hdmi_data_cr   ),
+		.hdmi_data_cb   (hdmi_data_cb   ),
+		.blk_valid      (blk_valid      ),
+		.blk_data_y     (blk_data_y     ),
+		.blk_data_cr    (blk_data_cr    ),
+		.blk_data_cb    (blk_data_cb    ),
+		.blk_eob        (blk_eob        ),
+		.blk_sob        (blk_sob        ),
+		.blk_sof        (blk_sof        )
+	);
 
 
 
