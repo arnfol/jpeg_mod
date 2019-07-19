@@ -53,7 +53,7 @@ assign out_sof   = sof[PIPE-1];
 assign out_valid = valid[PIPE-1];
 
 `ifdef DCT_FT
-	dct_ft_math #(.W_I(W_I)) i_dct_ft_math (.clk(clk), .rst_n(rst_n), .in_data(in_data), .out_data(out_data));
+	dct_ft_math #(.W_I(W_I)) i_dct_ft_math (.clk(clk), .rst_n(rst_n), .en(en), .in_data(in_data), .out_data(out_data));
 `elsif DCT_IT
-	dct_it_math #(.W_O(W_O)) i_dct_it_math (.clk(clk), .rst_n(rst_n), .in_data(in_data), .out_data(out_data));
+	dct_it_math #(.W_O(W_O)) i_dct_it_math (.clk(clk), .rst_n(rst_n), .en(en), .in_data(in_data), .out_data(out_data));
 `endif
