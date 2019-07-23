@@ -87,7 +87,7 @@ module blocks_to_hdmi_tb ();
 	task send_8_lines(bit sof=0);
 		send_block(sof);
 		repeat(X_RES/8-1) send_block();
-		wait_for((H_FRONT_PORCH_CYC+H_BACK_PORCH_CYC+H_SYNC_CYC)*8);
+		wait_for((H_FRONT_PORCH_CYC+H_BACK_PORCH_CYC+H_SYNC_CYC)*8/N);
 	endtask : send_8_lines
 
 	task send_frame();

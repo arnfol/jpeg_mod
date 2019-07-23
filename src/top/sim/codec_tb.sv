@@ -140,10 +140,10 @@ end
 task send_line();
 
 	i_hdmi_h_sync <= 1;
-	wait_for(H_SYNC_CYC);
+	wait_for(H_SYNC_CYC/N);
 	i_hdmi_h_sync <= 0;
 
-	wait_for(H_BACK_PORCH_CYC);
+	wait_for(H_BACK_PORCH_CYC/N);
 	i_hdmi_data_valid <= 1;
 
 	repeat(X_RES/N) begin
@@ -155,7 +155,7 @@ task send_line();
 
 	i_hdmi_data_valid <= 0;
 
-	wait_for(H_FRONT_PORCH_CYC);
+	wait_for(H_FRONT_PORCH_CYC/N);
 
 endtask : send_line
 
@@ -166,11 +166,11 @@ endtask : wait_for
 task wait_lines(int lines);
 	repeat(lines) begin
 		i_hdmi_h_sync <= 1;
-		wait_for(H_SYNC_CYC);
+		wait_for(H_SYNC_CYC/N);
 		i_hdmi_h_sync <= 0;
-		wait_for(H_BACK_PORCH_CYC);
+		wait_for(H_BACK_PORCH_CYC/N);
 		wait_for(X_RES/N);
-		wait_for(H_FRONT_PORCH_CYC);
+		wait_for(H_FRONT_PORCH_CYC/N);
 	end
 endtask : wait_lines
 
